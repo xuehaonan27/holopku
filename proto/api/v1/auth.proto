@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package auth;
+
+service Auth {
+    rpc Register (RegisterRequest) returns (RegisterResponse);
+    rpc Login (LoginRequest) returns (LoginResponse);
+    rpc GetUser (GetUserRequest) returns (GetUserResponse);
+}
+
+message RegisterRequest {
+    LoginProvider auth_provider = 1;
+    string username = 2;
+    string password = 3;
+    string email = 4;
+}
+
+message RegisterResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message LoginRequest {
+    LoginProvider auth_provider = 1;
+    string iaaa_token = 2;
+    string username = 3;
+    string password = 4;
+    // Required for IAAA authentication, should be omitted for password authentication.
+    optional string ip_address = 5;
+}
+
+message LoginResponse {
+    bool success = 1;
+    User user = 2;
+    string token = 3;
+}
+
+message GetUserRequest {
+    string token = 1;
+}
+
+message GetUserResponse {
+    bool success = 1;
+    User user = 2;
+}
+
+enum LoginProvider {
+    IAAA = 0;
+    PASSWORD = 1;
+}
+
+message User {
+    int32 id = 1;
+    string username = 2;
+    optional string email = 3;
+    LoginProvider login_provider = 4;
+    string nickname = 5;
+    int64 created_at = 6;
+    optional int64 updated_at = 7;
+}

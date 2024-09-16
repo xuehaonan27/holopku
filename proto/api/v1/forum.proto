@@ -1,0 +1,159 @@
+syntax = "proto3";
+
+package forum;
+
+service Forum {
+    rpc CreatePost (CreatePostRequest) returns (CreatePostResponse);
+    rpc DeletePost (DeletePostRequest) returns (DeletePostResponse);
+    rpc GetPost (GetPostRequest) returns (GetPostResponse);
+    rpc ListPosts (ListPostsRequest) returns (ListPostsResponse);     // Streaming?
+    rpc Comment (CommentRequest) returns (CommentResponse);
+    rpc DeleteComment (DeleteCommentRequest) returns (DeleteCommentResponse);
+    rpc Like (LikeRequest) returns (LikeResponse);
+    rpc Unlike (UnlikeRequest) returns (UnlikeResponse);
+    rpc Favorate (FavorateRequest) returns (FavorateResponse);
+    rpc Unfavorate (UnfavorateRequest) returns (UnfavorateResponse);
+}
+
+message CreatePostRequest {
+    int32 user_id = 2;
+    string title = 3;
+    string content = 4;
+    repeated string images = 5;
+}
+
+message CreatePostResponse {
+    bool success = 1;
+    string post_id = 2;
+    string message = 3;
+}
+
+message DeletePostRequest {
+    int32 user_id = 2;
+    string post_id = 3;
+}
+
+message DeletePostResponse {
+    bool success = 1;
+}
+
+message GetPostRequest {
+    int32 user_id = 1;
+    string post_id = 2;
+}
+
+message GetPostResponse {
+    bool success = 1;
+    Post post = 2;
+}
+
+message ListPostsRequest {
+    int32 user_id = 1;
+    int32 page = 2;
+    int32 page_size = 3;
+}
+
+message ListPostsResponse {
+    repeated Post posts = 1;
+}
+
+message CommentRequest {
+    int32 user_id = 1;
+    string post_id = 2;
+    string content = 3;
+}
+
+message CommentResponse {
+    bool success = 1;
+}
+
+message DeleteCommentRequest {
+    int32 user_id = 1;
+    string post_id = 2;
+    string comment_id = 3;
+}
+
+message DeleteCommentResponse {
+    bool success = 1;
+}
+
+message LikeRequest {
+    int32 user_id = 1;
+    string post_id = 2;
+}
+
+message LikeResponse {
+    bool success = 1;
+}
+
+message UnlikeRequest {
+    int32 user_id = 1;
+    string post_id = 2;
+}
+
+message UnlikeResponse {
+    bool success = 1;
+}
+
+message FavorateRequest {
+    int32 user_id = 1;
+    string post_id = 2;
+}
+
+message FavorateResponse {
+    bool success = 1;
+}
+
+message UnfavorateRequest {
+    int32 user_id = 1;
+    string post_id = 2;
+}
+
+message UnfavorateResponse {
+    bool success = 1;
+}
+
+message Post {
+    string id = 1;
+    string title = 2;
+    string user_id = 3;
+    string content = 4;
+    int32 likes = 6;
+    int32 favorates = 7;
+    int32 created_at = 9;
+    optional int32 updated_at = 10;
+    repeated Comment comments = 8; // MANAGED BY FOREIGN KEYS
+    repeated string images = 5; // MANAGED BY FOREIGN KEYS
+}
+
+message Comment {
+    string id = 1;
+    string post_id = 2;
+    string user_id = 3;
+    string content = 4;
+    int32 likes = 5;
+    int64 created_at = 6;
+    optional int64 updated_at = 7;
+}
+
+// A topic resource.
+message Topic {
+    // Required. The name of the topic. It must have the format
+    // `"projects/{project}/topics/{topic}"`. `{topic}` must start with a letter,
+    // and contain only letters (`[A-Za-z]`), numbers (`[0-9]`), dashes (`-`),
+    // underscores (`_`), periods (`.`), tildes (`~`), plus (`+`) or percent
+    // signs (`%`). It must be between 3 and 255 characters in length.
+    string name = 1;
+    
+    // Description of this topic.
+    string description = 2;
+
+    // See [Creating and managing labels]
+    map<string, string> labels = 3;
+
+    // Number of posts
+    int32 post_num = 4;
+
+    // Uuid of posts
+    repeated string post_ids = 5;
+}
