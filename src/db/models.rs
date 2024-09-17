@@ -52,7 +52,7 @@ pub struct User {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-#[derive(Insertable)]
+#[derive(Debug, Insertable)]
 #[diesel(table_name = crate::dbschema::Users)]
 pub struct IaaaNewUser {
     pub username: String,
@@ -61,7 +61,7 @@ pub struct IaaaNewUser {
     pub nickname: Option<String>,
 }
 
-#[derive(Insertable)]
+#[derive(Debug, Insertable)]
 #[diesel(table_name = crate::dbschema::Users)]
 pub struct PasswordNewUser {
     pub username: String,

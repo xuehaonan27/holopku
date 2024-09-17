@@ -32,7 +32,7 @@ message LoginRequest {
 message LoginResponse {
     bool success = 1;
     User user = 2;
-    string token = 3;
+    bytes token = 3;
 }
 
 message GetUserRequest {

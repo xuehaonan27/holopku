@@ -37,8 +37,8 @@ pub struct LoginResponse {
     pub success: bool,
     #[prost(message, optional, tag = "2")]
     pub user: ::core::option::Option<User>,
-    #[prost(string, tag = "3")]
-    pub token: ::prost::alloc::string::String,
+    #[prost(bytes = "vec", tag = "3")]
+    pub token: ::prost::alloc::vec::Vec<u8>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetUserRequest {

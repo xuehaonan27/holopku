@@ -1,5 +1,6 @@
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 use diesel::PgConnection;
+use log::{error, trace};
 use tonic::Status;
 
 use crate::codegen::auth::{LoginRequest, LoginResponse, RegisterRequest, RegisterResponse};
@@ -14,14 +15,17 @@ pub(super) async fn login_password(
     let username = &req.username;
     let dbuser = get_password_user_from_db(conn, username)
         .await
-        .map_err(|_| Status::not_found("No such user"))?;
+        .map_err(|e| {
+            error!("User {username} not found: {e}");
+            Status::not_found("No such user")
+        })?;
 
-    let hash = dbuser
-        .password
-        .as_ref()
-        .ok_or_else(|| Status::internal("user without password"))?;
-
-    if bcrypt::verify(&req.password, &hash).is_ok() {
+    let hash = dbuser.password.as_ref().ok_or_else(|| {
+        error!("User without password");
+        Status::internal("user without password")
+    })?;
+    if let Ok(true) = bcrypt::verify(&req.password, &hash) {
+        trace!("Password verified, issue token");
         use crate::codegen::auth::User;
         let created_at: i64 = dbuser.created_at.and_utc().timestamp();
         let updated_at: Option<i64> = dbuser
@@ -31,7 +35,13 @@ pub(super) async fn login_password(
             &dbuser.id.to_string(),
             dbuser.email.as_ref().unwrap_or(&"".to_string()),
         )
-        .map_err(|_| Status::unauthenticated("Fail to assign token"))?;
+        .map_err(|e| {
+            error!("Fail to issue token: {e}");
+            Status::unauthenticated("Fail to assign token")
+        })?;
+
+        trace!("Issued token: {token:#?}");
+
         let response = LoginResponse {
             success: true,
             user: Some(User {
@@ -47,6 +57,7 @@ pub(super) async fn login_password(
         };
         Ok(response)
     } else {
+        error!("Wrong password, user: {username}");
         Err(Status::unauthenticated("wrong password"))
     }
 }
@@ -56,10 +67,13 @@ pub(super) async fn register_password(
     req: RegisterRequest,
 ) -> Result<RegisterResponse, Status> {
     let password = &req.password;
-    let hashed_password =
-        bcrypt::hash(&password, 10).map_err(|_| Status::internal("Fail to register new user"))?;
+    let hashed_password = bcrypt::hash(&password, 10).map_err(|e| {
+        error!("Fail to hash password: {e}");
+        Status::internal("Fail to register new user")
+    })?;
 
     if get_password_user_from_db(conn, &req.username).await.is_ok() {
+        error!("User {} exist", req.username);
         return Err(Status::unavailable("User exist"));
     }
 
@@ -71,9 +85,12 @@ pub(super) async fn register_password(
         nickname: "".into(),
     };
 
-    let _ = insert_password_user_into_db(conn, new_user)
+    let _ = insert_password_user_into_db(conn, &new_user)
         .await
-        .map_err(|_| Status::internal("Fail to register new user"))?;
+        .map_err(|e| {
+            error!("Fail to register new user {new_user:#?}: {e}");
+            Status::internal("Fail to register new user")
+        })?;
 
     let response = RegisterResponse {
         success: true,

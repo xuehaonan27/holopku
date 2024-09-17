@@ -92,11 +92,11 @@ pub async fn get_password_user_from_db(
 
 pub async fn insert_password_user_into_db(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
-    new_user: models::PasswordNewUser,
+    new_user: &models::PasswordNewUser,
 ) -> Result<models::User, Box<dyn StdError>> {
     use crate::dbschema::Users::dsl::*;
     let new_user = diesel::insert_into(Users)
-        .values(&new_user)
+        .values(new_user)
         .returning(models::User::as_returning())
         .get_result(conn)?;
     Ok(new_user)

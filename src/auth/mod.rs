@@ -3,6 +3,7 @@ pub mod iaaa;
 pub mod password;
 
 use iaaa::login_iaaa;
+use log::{error, trace};
 use password::{login_password, register_password};
 use tonic::{Request, Response, Status};
 
@@ -26,7 +27,7 @@ impl Auth for AuthService {
         request: Request<LoginRequest>,
     ) -> Result<Response<LoginResponse>, Status> {
         let req = request.into_inner();
-        println!("Server got request: {req:#?}");
+        trace!("Login got request: {req:#?}");
 
         use crate::codegen::auth::LoginProvider;
         if req.auth_provider == LoginProvider::Iaaa as i32 {
@@ -39,10 +40,10 @@ impl Auth for AuthService {
         };
 
         // get connection to database
-        let conn = &mut self
-            .client
-            .get_conn()
-            .map_err(|_| Status::internal("Fail to authorize"))?;
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to authorize")
+        })?;
         let response = if req.auth_provider == LoginProvider::Iaaa as i32 {
             let token = &req.iaaa_token;
             let ip_address = req.ip_address.as_ref().unwrap(); // unwrap safe
@@ -50,6 +51,7 @@ impl Auth for AuthService {
         } else if req.auth_provider == LoginProvider::Password as i32 {
             login_password(conn, req).await
         } else {
+            error!("Unknown login provider: {}", req.auth_provider);
             Err(Status::invalid_argument("invalid login provider"))
         }?;
 
@@ -62,13 +64,15 @@ impl Auth for AuthService {
     ) -> Result<Response<RegisterResponse>, Status> {
         use crate::codegen::auth::LoginProvider;
         let req = request.into_inner();
+        trace!("Register got request: {req:#?}");
+
         let resp = if req.auth_provider == LoginProvider::Iaaa as i32 {
             Err(Status::unavailable("IAAA should not call Register"))
         } else if req.auth_provider == LoginProvider::Password as i32 {
-            let conn = &mut self
-                .client
-                .get_conn()
-                .map_err(|_| Status::internal("Fail to authorize"))?;
+            let conn = &mut self.client.get_conn().map_err(|e| {
+                error!("Fail to get connection to database: {e}");
+                Status::internal("Fail to authorize")
+            })?;
             register_password(conn, req).await
         } else {
             Err(Status::invalid_argument("invalid login provider"))
@@ -79,8 +83,10 @@ impl Auth for AuthService {
 
     async fn get_user(
         &self,
-        _request: Request<GetUserRequest>,
+        request: Request<GetUserRequest>,
     ) -> Result<Response<GetUserResponse>, Status> {
+        let req = request.into_inner();
+        trace!("GetUser got request: {req:#?}");
         todo!()
     }
 }

@@ -24,13 +24,13 @@ message CreatePostRequest {
 
 message CreatePostResponse {
     bool success = 1;
-    string post_id = 2;
+    int32 post_id = 2;
     string message = 3;
 }
 
 message DeletePostRequest {
     int32 user_id = 2;
-    string post_id = 3;
+    int32 post_id = 3;
 }
 
 message DeletePostResponse {
@@ -39,7 +39,7 @@ message DeletePostResponse {
 
 message GetPostRequest {
     int32 user_id = 1;
-    string post_id = 2;
+    int32 post_id = 2;
 }
 
 message GetPostResponse {
@@ -59,7 +59,7 @@ message ListPostsResponse {
 
 message CommentRequest {
     int32 user_id = 1;
-    string post_id = 2;
+    int32 post_id = 2;
     string content = 3;
 }
 
@@ -69,8 +69,8 @@ message CommentResponse {
 
 message DeleteCommentRequest {
     int32 user_id = 1;
-    string post_id = 2;
-    string comment_id = 3;
+    int32 post_id = 2;
+    int32 comment_id = 3;
 }
 
 message DeleteCommentResponse {
@@ -79,7 +79,7 @@ message DeleteCommentResponse {
 
 message LikeRequest {
     int32 user_id = 1;
-    string post_id = 2;
+    int32 post_id = 2;
 }
 
 message LikeResponse {
@@ -88,7 +88,7 @@ message LikeResponse {
 
 message UnlikeRequest {
     int32 user_id = 1;
-    string post_id = 2;
+    int32 post_id = 2;
 }
 
 message UnlikeResponse {
@@ -97,7 +97,7 @@ message UnlikeResponse {
 
 message FavorateRequest {
     int32 user_id = 1;
-    string post_id = 2;
+    int32 post_id = 2;
 }
 
 message FavorateResponse {
@@ -106,7 +106,7 @@ message FavorateResponse {
 
 message UnfavorateRequest {
     int32 user_id = 1;
-    string post_id = 2;
+    int32 post_id = 2;
 }
 
 message UnfavorateResponse {
@@ -114,9 +114,9 @@ message UnfavorateResponse {
 }
 
 message Post {
-    string id = 1;
+    int32 id = 1;
     string title = 2;
-    string user_id = 3;
+    int32 user_id = 3;
     string content = 4;
     int32 likes = 6;
     int32 favorates = 7;
@@ -127,9 +127,9 @@ message Post {
 }
 
 message Comment {
-    string id = 1;
-    string post_id = 2;
-    string user_id = 3;
+    int32 id = 1;
+    int32 post_id = 2;
+    int32 user_id = 3;
     string content = 4;
     int32 likes = 5;
     int64 created_at = 6;
@@ -138,22 +138,24 @@ message Comment {
 
 // A topic resource.
 message Topic {
+    int32 id = 1;
+
     // Required. The name of the topic. It must have the format
     // `"projects/{project}/topics/{topic}"`. `{topic}` must start with a letter,
     // and contain only letters (`[A-Za-z]`), numbers (`[0-9]`), dashes (`-`),
     // underscores (`_`), periods (`.`), tildes (`~`), plus (`+`) or percent
     // signs (`%`). It must be between 3 and 255 characters in length.
-    string name = 1;
+    string name = 2;
     
     // Description of this topic.
-    string description = 2;
+    string description = 3;
 
     // See [Creating and managing labels]
-    map<string, string> labels = 3;
+    map<string, string> labels = 4;
 
     // Number of posts
-    int32 post_num = 4;
+    int32 post_num = 5;
 
     // Uuid of posts
-    repeated string post_ids = 5;
+    repeated int32 post_ids = 6;
 }

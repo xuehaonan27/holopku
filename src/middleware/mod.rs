@@ -1,8 +1,11 @@
 use jsonwebtoken::errors::Error as JwtError;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use log::trace;
 use serde::{Deserialize, Serialize};
-use std::sync::LazyLock;
 use tonic::{Request, Status};
+
+use crate::crypto::encrypt_aes256;
+use crate::{AUTHORIZATION_KEY, JWT_EXPIRE_TIME, JWT_ISSUER, JWT_SECRET};
 
 /// Authentication interceptor to verify JWT in the request.
 /// This function will get called on each inbound request, if a `Status`
@@ -10,9 +13,9 @@ use tonic::{Request, Status};
 /// client.
 
 pub fn auth_interceptor(request: Request<()>) -> Result<Request<()>, Status> {
-    println!("Intercepting request: {:?}", request);
+    trace!("Auth intercepting request: {:?}", request);
 
-    let token = match request.metadata().get("authorization") {
+    let token = match request.metadata().get(AUTHORIZATION_KEY) {
         Some(token) => token.to_str().unwrap_or(""),
         None => return Err(Status::unauthenticated("Missing authorization header")),
     };
@@ -23,10 +26,11 @@ pub fn auth_interceptor(request: Request<()>) -> Result<Request<()>, Status> {
         let now = chrono::Utc::now().timestamp();
         let expire_at = claims.iat + claims.exp;
         if now >= (expire_at as i64) {
+            trace!("Token {token} expired");
             return Err(Status::unauthenticated("Token expired"));
         }
         // communicate with Redis to check whether it's valid or not
-        todo!("communicate with Redis and Database to check whether the user is valid or not");  
+        // todo!("communicate with Redis and Database to check whether the user is valid or not");
         Ok(request)
     } else {
         Err(Status::unauthenticated("Invalid token"))
@@ -43,22 +47,13 @@ struct Claims {
     sub: String, // Optional. Subject (whom token refers to)
 }
 
-const JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
-    let jwt_secret = std::env::var("JWT_SECRET").expect("Must set JWT_SECRET");
-    jwt_secret
-});
-const JWT_EXPIRE_TIME: LazyLock<usize> = LazyLock::new(|| {
-    let jwt_expire_time = std::env::var("JWT_EXPIRE_TIME").expect("Must set JWT_EXPIRE_TIME");
-    jwt_expire_time
-        .parse::<usize>()
-        .expect("JWT_EXPIRE_TIME must be set to a positive integer")
-});
-const JWT_ISSUER: &'static str = "HoloPKU server";
-
-pub fn issue_token(user_id: &String, email: &String) -> Result<String, JwtError> {
+pub fn issue_token(user_id: &String, email: &String) -> Result<Vec<u8>, JwtError> {
     let token = issue_token_inner(user_id, email)?;
+    trace!("Token: {token}");
     // encrypt the token
-    todo!("encrypt the token")
+    let encrypt_token = encrypt_aes256(token.as_bytes());
+    trace!("Encrypted token: {token}");
+    Ok(encrypt_token)
 }
 
 fn issue_token_inner(user_id: &String, email: &String) -> Result<String, JwtError> {
@@ -69,6 +64,7 @@ fn issue_token_inner(user_id: &String, email: &String) -> Result<String, JwtErro
         aud: user_id.clone(),
         sub: email.clone(),
     };
+    trace!("Claims: {claims:#?}");
     encode(
         &Header::default(),
         &claims,

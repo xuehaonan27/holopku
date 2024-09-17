@@ -4,15 +4,17 @@ use holopku::codegen::forum::forum_server::ForumServer;
 use holopku::db::DBClient;
 use holopku::forum::ForumService;
 use holopku::middleware::auth_interceptor;
+use log::trace;
 use std::env;
 use std::time::Duration;
 use tonic::transport::Server;
-use tonic_web::GrpcWebLayer;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // load configuration
     dotenvy::dotenv().ok();
+    log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
+
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let iaaa_id = env::var("IAAA_ID").expect("Must set IAAA_ID");
     let iaaa_key = env::var("IAAA_KEY").expect("Must set IAAA_KEY");
@@ -22,7 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // establish database connection
     let client = DBClient::connect(&database_url)?;
     let addr = addr.parse().unwrap();
-    println!("Auth server listening on: {}", addr);
+    trace!("Auth server listening on: {}", addr);
 
     let auth_srv = AuthService {
         client: client.clone(),
@@ -37,10 +39,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let forum_srv = ForumServer::with_interceptor(forum_srv, auth_interceptor);
 
     Server::builder()
-        .timeout(Duration::from_secs(5))
-        .layer(GrpcWebLayer::new())
-        .add_service(auth_srv)
-        .add_service(forum_srv)
+        .accept_http1(true)
+        // .timeout(Duration::from_secs(5))
+        .add_service(tonic_web::enable(auth_srv))
+        .add_service(tonic_web::enable(forum_srv))
         .serve(addr)
         .await?;
 

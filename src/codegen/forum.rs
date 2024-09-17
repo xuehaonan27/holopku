@@ -14,29 +14,29 @@ pub struct CreatePostRequest {
 pub struct CreatePostResponse {
     #[prost(bool, tag = "1")]
     pub success: bool,
-    #[prost(string, tag = "2")]
-    pub post_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "2")]
+    pub post_id: i32,
     #[prost(string, tag = "3")]
     pub message: ::prost::alloc::string::String,
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct DeletePostRequest {
     #[prost(int32, tag = "2")]
     pub user_id: i32,
-    #[prost(string, tag = "3")]
-    pub post_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "3")]
+    pub post_id: i32,
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct DeletePostResponse {
     #[prost(bool, tag = "1")]
     pub success: bool,
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct GetPostRequest {
     #[prost(int32, tag = "1")]
     pub user_id: i32,
-    #[prost(string, tag = "2")]
-    pub post_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "2")]
+    pub post_id: i32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetPostResponse {
@@ -63,8 +63,8 @@ pub struct ListPostsResponse {
 pub struct CommentRequest {
     #[prost(int32, tag = "1")]
     pub user_id: i32,
-    #[prost(string, tag = "2")]
-    pub post_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "2")]
+    pub post_id: i32,
     #[prost(string, tag = "3")]
     pub content: ::prost::alloc::string::String,
 }
@@ -73,62 +73,62 @@ pub struct CommentResponse {
     #[prost(bool, tag = "1")]
     pub success: bool,
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct DeleteCommentRequest {
     #[prost(int32, tag = "1")]
     pub user_id: i32,
-    #[prost(string, tag = "2")]
-    pub post_id: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
-    pub comment_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "2")]
+    pub post_id: i32,
+    #[prost(int32, tag = "3")]
+    pub comment_id: i32,
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct DeleteCommentResponse {
     #[prost(bool, tag = "1")]
     pub success: bool,
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct LikeRequest {
     #[prost(int32, tag = "1")]
     pub user_id: i32,
-    #[prost(string, tag = "2")]
-    pub post_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "2")]
+    pub post_id: i32,
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct LikeResponse {
     #[prost(bool, tag = "1")]
     pub success: bool,
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct UnlikeRequest {
     #[prost(int32, tag = "1")]
     pub user_id: i32,
-    #[prost(string, tag = "2")]
-    pub post_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "2")]
+    pub post_id: i32,
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct UnlikeResponse {
     #[prost(bool, tag = "1")]
     pub success: bool,
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct FavorateRequest {
     #[prost(int32, tag = "1")]
     pub user_id: i32,
-    #[prost(string, tag = "2")]
-    pub post_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "2")]
+    pub post_id: i32,
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct FavorateResponse {
     #[prost(bool, tag = "1")]
     pub success: bool,
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct UnfavorateRequest {
     #[prost(int32, tag = "1")]
     pub user_id: i32,
-    #[prost(string, tag = "2")]
-    pub post_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "2")]
+    pub post_id: i32,
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct UnfavorateResponse {
@@ -137,12 +137,12 @@ pub struct UnfavorateResponse {
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Post {
-    #[prost(string, tag = "1")]
-    pub id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "1")]
+    pub id: i32,
     #[prost(string, tag = "2")]
     pub title: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
-    pub user_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "3")]
+    pub user_id: i32,
     #[prost(string, tag = "4")]
     pub content: ::prost::alloc::string::String,
     #[prost(int32, tag = "6")]
@@ -162,12 +162,12 @@ pub struct Post {
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Comment {
-    #[prost(string, tag = "1")]
-    pub id: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
-    pub post_id: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
-    pub user_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "1")]
+    pub id: i32,
+    #[prost(int32, tag = "2")]
+    pub post_id: i32,
+    #[prost(int32, tag = "3")]
+    pub user_id: i32,
     #[prost(string, tag = "4")]
     pub content: ::prost::alloc::string::String,
     #[prost(int32, tag = "5")]
@@ -180,28 +180,30 @@ pub struct Comment {
 /// A topic resource.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Topic {
+    #[prost(int32, tag = "1")]
+    pub id: i32,
     /// Required. The name of the topic. It must have the format
     /// `"projects/{project}/topics/{topic}"`. `{topic}` must start with a letter,
     /// and contain only letters (`\[A-Za-z\]`), numbers (`\[0-9\]`), dashes (`-`),
     /// underscores (`_`), periods (`.`), tildes (`~`), plus (`+`) or percent
     /// signs (`%`). It must be between 3 and 255 characters in length.
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "2")]
     pub name: ::prost::alloc::string::String,
     /// Description of this topic.
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "3")]
     pub description: ::prost::alloc::string::String,
     /// See \[Creating and managing labels\]
-    #[prost(map = "string, string", tag = "3")]
+    #[prost(map = "string, string", tag = "4")]
     pub labels: ::std::collections::HashMap<
         ::prost::alloc::string::String,
         ::prost::alloc::string::String,
     >,
     /// Number of posts
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "5")]
     pub post_num: i32,
     /// Uuid of posts
-    #[prost(string, repeated, tag = "5")]
-    pub post_ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(int32, repeated, tag = "6")]
+    pub post_ids: ::prost::alloc::vec::Vec<i32>,
 }
 /// Generated client implementations.
 pub mod forum_client {

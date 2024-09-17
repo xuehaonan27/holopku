@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+aes = "0.8"
 async-stream = "0.3"
 bcrypt = "0.15"
+cbc = { version = "0.1", features = ["std"] }
 chrono = { version = "0.4", features = ["serde"] }
 diesel = { version = "2.2", features = [
     "32-column-tables",
@@ -16,9 +18,11 @@ diesel = { version = "2.2", features = [
     "r2d2",
 ] }
 dotenvy = "0.15"
-hyper = "1.4.1"
+hyper = "1.4"
+hyper-util = "0.1.8"
 jsonwebtoken = "9.3"
 log = "0.4"
+log4rs = "1.3"
 md5 = "0.7"
 prost = "0.13"
 prost-types = "0.13"
@@ -37,6 +41,7 @@ tokio-stream = "0.1"
 tonic = "0.12"
 tonic-web = "0.12"
 tower = { version = "0.5", features = ["timeout", "retry"] }
+tower-http = "0.5.2"
 
 [build-dependencies]
 tonic-build = { version = "0.12", features = ["prost"] }
