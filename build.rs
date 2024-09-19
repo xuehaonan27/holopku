@@ -3,6 +3,11 @@
 fn main() {
     tonic_build::configure()
         .out_dir("src/codegen")
+        .compile(&["proto/api/v1/hello.proto"], &["proto"])
+        .unwrap();
+
+    tonic_build::configure()
+        .out_dir("src/codegen")
         .compile(&["proto/api/v1/forum.proto"], &["proto"])
         .unwrap();
 

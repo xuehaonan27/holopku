@@ -40,7 +40,7 @@ pub(super) async fn login_password(
             Status::unauthenticated("Fail to assign token")
         })?;
 
-        trace!("Issued token: {token:#?}");
+        trace!("Issued token: {token:?}");
 
         let response = LoginResponse {
             success: true,

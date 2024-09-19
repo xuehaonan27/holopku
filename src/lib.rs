@@ -1,12 +1,14 @@
 pub mod codegen {
     pub mod auth;
     pub mod forum;
+    pub mod hello;
 }
 
 pub mod auth;
 pub mod crypto;
 pub mod db;
 pub mod forum;
+pub mod hello;
 pub mod middleware;
 use db::schema as dbschema;
 use std::env;

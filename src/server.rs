@@ -1,8 +1,10 @@
 use holopku::auth::AuthService;
 use holopku::codegen::auth::auth_server::AuthServer;
 use holopku::codegen::forum::forum_server::ForumServer;
+use holopku::codegen::hello::hello_server::HelloServer;
 use holopku::db::DBClient;
 use holopku::forum::ForumService;
+use holopku::hello::HelloService;
 use holopku::middleware::auth_interceptor;
 use log::trace;
 use std::env;
@@ -26,6 +28,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = addr.parse().unwrap();
     trace!("Auth server listening on: {}", addr);
 
+    let hello_srv = HelloService {};
+    let hello_srv = HelloServer::new(hello_srv);
+
     let auth_srv = AuthService {
         client: client.clone(),
         iaaa_id,
@@ -41,6 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Server::builder()
         .accept_http1(true)
         // .timeout(Duration::from_secs(5))
+        .add_service(tonic_web::enable(hello_srv))
         .add_service(tonic_web::enable(auth_srv))
         .add_service(tonic_web::enable(forum_srv))
         .serve(addr)
