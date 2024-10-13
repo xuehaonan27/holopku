@@ -1,4 +1,4 @@
-use holopku::auth::AuthService;
+use holopku::{auth::AuthService, check_envs};
 use holopku::codegen::auth::auth_server::AuthServer;
 use holopku::codegen::forum::forum_server::ForumServer;
 use holopku::codegen::hello::hello_server::HelloServer;
@@ -9,7 +9,7 @@ use holopku::middleware::auth_interceptor;
 use log::trace;
 use std::env;
 use std::time::Duration;
-use tonic::transport::Server;
+use tonic::transport::{Identity, Server, ServerTlsConfig};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -22,6 +22,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let iaaa_key = env::var("IAAA_KEY").expect("Must set IAAA_KEY");
     let addr = env::var("LISTEN_ADDR").expect("Must set LISTEN_ADDR");
     // let jwt_secret = env::var("JWT_SECRET").expect("Must set JWT_SECRET");
+    // let cert_path = env::var("SSL_CRT_FILE").expect("Must set SSL_CRT_FILE");
+    // let key_path = env::var("SSL_KEY_FILE").expect("Must set SSL_KEY_FILE");
+
+    check_envs();
+    // let cert = tokio::fs::read(cert_path).await.expect("Can not read SSL cert file");
+    // let key = tokio::fs::read(key_path).await.expect("Can not read SSL key file");
+    // let identity = Identity::from_pem(cert, key);
+    // let tls_config = ServerTlsConfig::new().identity(identity);
 
     // establish database connection
     let client = DBClient::connect(&database_url)?;
@@ -44,6 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let forum_srv = ForumServer::with_interceptor(forum_srv, auth_interceptor);
 
     Server::builder()
+        // .tls_config(tls_config)?
         .accept_http1(true)
         // .timeout(Duration::from_secs(5))
         .add_service(tonic_web::enable(hello_srv))

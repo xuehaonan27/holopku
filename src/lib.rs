@@ -11,6 +11,7 @@ pub mod forum;
 pub mod hello;
 pub mod middleware;
 use db::schema as dbschema;
+use log::info;
 use std::env;
 use std::sync::LazyLock;
 
@@ -45,9 +46,15 @@ const AES256IV: LazyLock<[u8; 16]> = LazyLock::new(|| {
 
 /// Check all environment variables to assure integrity.
 pub fn check_envs() {
+    // log safe: information stored on server.
     let _env = JWT_SECRET;
+    info!("JWT_SECRET={:?}", *JWT_SECRET);
     let _env = JWT_EXPIRE_TIME;
+    info!("JWT_EXPIRE_TIME={:?}", *JWT_EXPIRE_TIME);
     let _env = JWT_ISSUER;
+    info!("JWT_ISSUER={:?}", JWT_ISSUER);
     let _env = AES256KEY;
+    info!("AES256KEY={:?}", *AES256KEY);
     let _env = AES256IV;
+    info!("AES256IV={:?}", *AES256IV);
 }

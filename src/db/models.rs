@@ -2,7 +2,7 @@ use crate::dbschema::sql_types::LoginProvider as LoginProviderType;
 use chrono::NaiveDateTime;
 use diesel::deserialize::FromSql;
 use diesel::pg::Pg;
-use diesel::serialize::{IsNull, Output, ToSql};
+use diesel::serialize::{IsNull, ToSql};
 use diesel::*;
 use std::io::Write;
 
