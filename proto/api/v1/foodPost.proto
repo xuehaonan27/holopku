@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package foodPost;
+
+import "proto/api/v1/post.proto";
+
+
+
+enum Place{
+    JiaYuan = 0;
+    YiYuan = 1;
+    ShaoYuan = 2;
+    YanNan = 3;
+    NongYuan = 4;
+    XueYi = 5;
+    XueWu = 6;
+    Other = 7;
+}
+
+message FoodPost{
+    post.Post post = 1;
+    Place place = 2;
+    int32 score = 3;
+}
+

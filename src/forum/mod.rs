@@ -1,17 +1,34 @@
-use log::trace;
+use log::{error, trace};
 use tonic::{Request, Response, Status};
 
 use crate::codegen::forum::forum_server::Forum;
+use crate::codegen::forum::CreateAmusementPostRequest;
+use crate::codegen::forum::CreateFoodPostRequest;
+use crate::codegen::forum::CreatePostResponse;
+use crate::codegen::forum::CreateSellPostRequest;
+use crate::codegen::forum::GetAmusementPostResponse;
+use crate::codegen::forum::GetFoodPostResponse;
+use crate::codegen::forum::GetPostRequest;
+use crate::codegen::forum::GetSellPostResponse;
 use crate::codegen::forum::{CommentRequest, CommentResponse};
-use crate::codegen::forum::{CreatePostRequest, CreatePostResponse};
 use crate::codegen::forum::{DeleteCommentRequest, DeleteCommentResponse};
 use crate::codegen::forum::{DeletePostRequest, DeletePostResponse};
 use crate::codegen::forum::{FavorateRequest, FavorateResponse};
-use crate::codegen::forum::{GetPostRequest, GetPostResponse};
-use crate::codegen::forum::{LikeRequest, LikeResponse};
-use crate::codegen::forum::{ListPostsRequest, ListPostsResponse};
+use crate::codegen::forum::{LikeCommentRequest, LikeCommentResponse};
+use crate::codegen::forum::{LikePostRequest, LikePostResponse};
+use crate::codegen::forum::{ListAmusementPostsRequest, ListAmusementPostsResponse};
+use crate::codegen::forum::{ListFoodPostsRequest, ListFoodPostsResponse};
+use crate::codegen::forum::{ListPersonalPostsRequest, ListPersonalPostsResponse};
+use crate::codegen::forum::{ListSellPostsRequest, ListSellPostsResponse};
+use crate::codegen::forum::{NoTakePartAmusePostRequest, NoTakePartAmusePostResponse};
+use crate::codegen::forum::{SetSoldRequest, SetSoldResponse};
+use crate::codegen::forum::{TakePartAmusePostRequest, TakePartAmusePostResponse};
 use crate::codegen::forum::{UnfavorateRequest, UnfavorateResponse};
-use crate::codegen::forum::{UnlikeRequest, UnlikeResponse};
+use crate::codegen::forum::{UnlikeCommentRequest, UnlikeCommentResponse};
+use crate::codegen::forum::{UnlikePostRequest, UnlikePostResponse};
+
+use crate::db::models::Post;
+use crate::db::schema::Comments::user_id;
 use crate::db::DBClient;
 
 #[derive(Debug)]
@@ -21,105 +38,221 @@ pub struct ForumService {
 
 #[tonic::async_trait]
 impl Forum for ForumService {
-    async fn create_post(
-        &self,
-        request: Request<CreatePostRequest>,
-    ) -> Result<Response<CreatePostResponse>, Status> {
-        let req = request.into_inner();
-        trace!("CreatePost got request: {req:#?}");
-
-        let response = CreatePostResponse {
-            success: true,
-            post_id: 0,
-            message: "post create succeeded".into(),
-        };
-        Ok(Response::new(response))
-    }
-
     async fn delete_post(
         &self,
-        request: Request<DeletePostRequest>,
-    ) -> Result<Response<DeletePostResponse>, Status> {
+        request: tonic::Request<DeletePostRequest>,
+    ) -> std::result::Result<tonic::Response<DeletePostResponse>, tonic::Status> {
         let req = request.into_inner();
         trace!("DeletePost got request: {req:#?}");
 
-        todo!()
+        todo!();
     }
 
-    async fn get_post(
+    async fn list_personal_posts(
         &self,
-        request: Request<GetPostRequest>,
-    ) -> Result<Response<GetPostResponse>, Status> {
+        request: tonic::Request<ListPersonalPostsRequest>,
+    ) -> std::result::Result<tonic::Response<ListPersonalPostsResponse>, tonic::Status> {
         let req = request.into_inner();
-        trace!("GetPost got request: {req:#?}");
+        trace!("ListPersonalPost got request: {req:#?}");
 
-        todo!()
-    }
-
-    async fn list_posts(
-        &self,
-        request: Request<ListPostsRequest>,
-    ) -> Result<Response<ListPostsResponse>, Status> {
-        let req = request.into_inner();
-        trace!("ListPosts got request: {req:#?}");
-
-        todo!()
+        todo!();
     }
 
     async fn comment(
         &self,
-        request: Request<CommentRequest>,
-    ) -> Result<Response<CommentResponse>, Status> {
+        request: tonic::Request<CommentRequest>,
+    ) -> std::result::Result<tonic::Response<CommentResponse>, tonic::Status> {
         let req = request.into_inner();
         trace!("Comment got request: {req:#?}");
 
-        todo!()
+        todo!();
     }
 
     async fn delete_comment(
         &self,
-        request: Request<DeleteCommentRequest>,
-    ) -> Result<Response<DeleteCommentResponse>, Status> {
+        request: tonic::Request<DeleteCommentRequest>,
+    ) -> std::result::Result<tonic::Response<DeleteCommentResponse>, tonic::Status> {
         let req = request.into_inner();
         trace!("DeleteComment got request: {req:#?}");
 
-        todo!()
+        todo!();
     }
 
-    async fn like(&self, request: Request<LikeRequest>) -> Result<Response<LikeResponse>, Status> {
-        let req = request.into_inner();
-        trace!("Like got request: {req:#?}");
-
-        todo!()
-    }
-
-    async fn unlike(
+    async fn like_post(
         &self,
-        request: Request<UnlikeRequest>,
-    ) -> Result<Response<UnlikeResponse>, Status> {
+        request: tonic::Request<LikePostRequest>,
+    ) -> std::result::Result<tonic::Response<LikePostResponse>, tonic::Status> {
         let req = request.into_inner();
-        trace!("Unlike got request: {req:#?}");
+        trace!("LikePost got request: {req:#?}");
 
-        todo!()
+        todo!();
+    }
+
+    async fn unlike_post(
+        &self,
+        request: tonic::Request<UnlikePostRequest>,
+    ) -> std::result::Result<tonic::Response<UnlikePostResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("UnlikePost got request: {req:#?}");
+
+        todo!();
+    }
+
+    async fn like_comment(
+        &self,
+        request: tonic::Request<LikeCommentRequest>,
+    ) -> std::result::Result<tonic::Response<LikeCommentResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("LikeComment got request: {req:#?}");
+
+        todo!();
+    }
+
+    async fn unlike_comment(
+        &self,
+        request: tonic::Request<UnlikeCommentRequest>,
+    ) -> std::result::Result<tonic::Response<UnlikeCommentResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("UnlikeComment got request: {req:#?}");
+
+        todo!();
     }
 
     async fn favorate(
         &self,
-        request: Request<FavorateRequest>,
-    ) -> Result<Response<FavorateResponse>, Status> {
+        request: tonic::Request<FavorateRequest>,
+    ) -> std::result::Result<tonic::Response<FavorateResponse>, tonic::Status> {
         let req = request.into_inner();
         trace!("Favorate got request: {req:#?}");
 
-        todo!()
+        todo!();
     }
 
     async fn unfavorate(
         &self,
-        request: Request<UnfavorateRequest>,
-    ) -> Result<Response<UnfavorateResponse>, Status> {
+        request: tonic::Request<UnfavorateRequest>,
+    ) -> std::result::Result<tonic::Response<UnfavorateResponse>, tonic::Status> {
         let req = request.into_inner();
         trace!("Unfavorate got request: {req:#?}");
 
-        todo!()
+        todo!();
+    }
+
+    // about amusement
+
+    async fn create_amusement_post(
+        &self,
+        request: tonic::Request<CreateAmusementPostRequest>,
+    ) -> std::result::Result<tonic::Response<CreatePostResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("CreateAmusementPost got request: {req:#?}");
+
+        todo!();
+    }
+    async fn get_amusement_post(
+        &self,
+        request: tonic::Request<GetPostRequest>,
+    ) -> std::result::Result<tonic::Response<GetAmusementPostResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("GetAmusementPost got request: {req:#?}");
+
+        todo!();
+    }
+    async fn list_amusement_posts(
+        &self,
+        request: tonic::Request<ListAmusementPostsRequest>,
+    ) -> std::result::Result<tonic::Response<ListAmusementPostsResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("ListAmusementPost got request: {req:#?}");
+
+        todo!();
+    }
+    async fn take_part(
+        &self,
+        request: tonic::Request<TakePartAmusePostRequest>,
+    ) -> std::result::Result<tonic::Response<TakePartAmusePostResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("TakePart got request: {req:#?}");
+
+        todo!();
+    }
+
+    async fn no_take_part(
+        &self,
+        request: tonic::Request<NoTakePartAmusePostRequest>,
+    ) -> std::result::Result<tonic::Response<NoTakePartAmusePostResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("NoTakePart got request: {req:#?}");
+
+        todo!();
+    }
+
+    // about food
+
+    async fn create_food_post(
+        &self,
+        request: tonic::Request<CreateFoodPostRequest>,
+    ) -> std::result::Result<tonic::Response<CreatePostResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("CreateFoodPost got request: {req:#?}");
+
+        todo!();
+    }
+    async fn get_food_post(
+        &self,
+        request: tonic::Request<GetPostRequest>,
+    ) -> std::result::Result<tonic::Response<GetFoodPostResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("GetFoodPost got request: {req:#?}");
+
+        todo!();
+    }
+    async fn list_food_posts(
+        &self,
+        request: tonic::Request<ListFoodPostsRequest>,
+    ) -> std::result::Result<tonic::Response<ListFoodPostsResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("ListFoodPost got request: {req:#?}");
+
+        todo!();
+    }
+
+    // about sell
+
+    async fn create_sell_post(
+        &self,
+        request: tonic::Request<CreateSellPostRequest>,
+    ) -> std::result::Result<tonic::Response<CreatePostResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("CreateSellPost got request: {req:#?}");
+
+        todo!();
+    }
+    async fn get_sell_post(
+        &self,
+        request: tonic::Request<GetPostRequest>,
+    ) -> std::result::Result<tonic::Response<GetSellPostResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("GetSellPost got request: {req:#?}");
+
+        todo!();
+    }
+    async fn list_sell_posts(
+        &self,
+        request: tonic::Request<ListSellPostsRequest>,
+    ) -> std::result::Result<tonic::Response<ListSellPostsResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("ListSellPost got request: {req:#?}");
+
+        todo!();
+    }
+    async fn set_sold(
+        &self,
+        request: tonic::Request<SetSoldRequest>,
+    ) -> std::result::Result<tonic::Response<SetSoldResponse>, tonic::Status> {
+        let req = request.into_inner();
+        trace!("SetSold got request: {req:#?}");
+
+        todo!();
     }
 }
