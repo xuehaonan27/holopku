@@ -1,7 +1,7 @@
 use holopku::codegen::auth::auth_client::AuthClient;
 use holopku::codegen::auth::{GetUserRequest, LoginProvider, LoginRequest, RegisterRequest};
 use holopku::codegen::forum::forum_client::ForumClient;
-use holopku::codegen::forum::CreatePostRequest;
+// use holopku::codegen::forum::CreatePostRequest;
 use holopku::AUTHORIZATION_KEY;
 use hyper_util::rt::TokioExecutor;
 use tonic::metadata::MetadataValue;
@@ -89,20 +89,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("*** FORUM CLIENT ***");
     println!("Try CreatePost request");
 
-    let response = forum_client
-        .create_post({
-            let mut create_post = CreatePostRequest {
-                user_id,
-                title: "NewPostTitle".into(),
-                content: "This is my new post!".into(),
-                images: vec![],
-            }
-            .into_request();
-            let metadata = create_post.metadata_mut();
-            metadata.append_bin(AUTHORIZATION_KEY, MetadataValue::from_bytes(&token));
-            create_post
-        })
-        .await;
-    println!("RESPONSE = {:?}", response);
+    // let response = forum_client
+    //     .create_post({
+    //         let mut create_post = CreatePostRequest {
+    //             user_id,
+    //             title: "NewPostTitle".into(),
+    //             content: "This is my new post!".into(),
+    //             images: vec![],
+    //         }
+    //         .into_request();
+    //         let metadata = create_post.metadata_mut();
+    //         metadata.append_bin(AUTHORIZATION_KEY, MetadataValue::from_bytes(&token));
+    //         create_post
+    //     })
+    //     .await;
+    // println!("RESPONSE = {:?}", response);
     Ok(())
 }
