@@ -2,6 +2,10 @@ pub mod codegen {
     pub mod auth;
     pub mod forum;
     pub mod hello;
+    pub mod post;
+    pub mod amusement_post;
+    pub mod food_post;
+    pub mod sell_post;
 }
 
 pub mod auth;
