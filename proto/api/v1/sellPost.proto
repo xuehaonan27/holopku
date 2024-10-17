@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package sellPost;
+
+import "proto/api/v1/post.proto";
+
+enum GoodsType{
+    Ticket = 0;
+    Book = 1;
+    Display = 2;
+    Computer = 3;
+    Other = 4;
+}
+
+message SellPost{
+    post.Post post = 1;
+    optional string contact = 2;
+    int32 price = 3;
+    GoodsType type = 4;
+    bool sold = 5; 
+}

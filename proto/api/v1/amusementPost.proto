@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package amusementPost;
+
+import "proto/api/v1/post.proto";
+
+enum GameType{
+    WolfKill = 0;
+    JvBen = 1;
+    BloodTower = 2;
+    Karaok = 3;
+    BoardGame = 4;
+    Sports = 5;
+    Riding = 6;
+    Other = 7;
+}
+
+message AmusementPost{
+    post.Post post = 1;
+    int32 people_all = 2;
+    int32 people_already = 3;
+    GameType type = 4;
+    int32 time = 5;
+    string place = 6;
+    string contact = 7;
+}
