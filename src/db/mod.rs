@@ -3,7 +3,6 @@ use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 use diesel::PgConnection;
 use models::NullableIntArray;
-use schema::Posts::comments_id;
 
 use std::error::Error as StdError;
 
@@ -119,10 +118,13 @@ pub fn insert_post(
 pub fn delete_post(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     post_id: i32,
-) -> Result<(), Box<dyn StdError>> {
+) -> Result<models::Post, Box<dyn StdError>> {
     use crate::dbschema::Posts::dsl::*;
+    // 获取要删除的Post对象
+    let post_to_delete: models::Post = Posts.filter(id.eq(post_id)).first(conn)?;
+    // 删除Post
     diesel::delete(Posts.filter(id.eq(post_id))).execute(conn)?;
-    Ok(())
+    Ok(post_to_delete)
 }
 
 pub fn query_post_by_id(
@@ -136,4 +138,96 @@ pub fn query_post_by_id(
         .first(conn)
         .map_err(|e| e.to_string())?;
     Ok(post)
+}
+
+pub fn query_comment_by_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    comment_id: i32,
+) -> Result<models::Comment, Box<dyn StdError>> {
+    use crate::dbschema::Comments::dsl::*;
+    let comment = Comments
+        .filter(schema::Comments::id.eq(&comment_id))
+        .select(models::Comment::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    Ok(comment)
+}
+
+pub fn insert_comment_and_update_post(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    new_comment: models::Comment,
+) -> Result<(), Box<dyn StdError>> {
+    use crate::dbschema::Comments::dsl::*;
+    use crate::dbschema::Posts::dsl::*;
+
+    let inserted_comment: models::Comment = diesel::insert_into(Comments)
+        .values(&new_comment)
+        .get_result(conn)?;
+
+    let new_comments_id = {
+        let mut current_comments_id: NullableIntArray = Posts
+            .filter(schema::Posts::id.eq(inserted_comment.post_id))
+            .select(comments_id)
+            .first(conn)?;
+
+        current_comments_id.0.push(Some(inserted_comment.id));
+        current_comments_id
+    };
+
+    diesel::update(Posts.filter(schema::Posts::id.eq(inserted_comment.post_id)))
+        .set(comments_id.eq(new_comments_id))
+        .execute(conn)?;
+
+    Ok(())
+}
+
+pub fn delete_comment_and_update_post(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    comment_id: i32,
+) -> Result<(), Box<dyn StdError>> {
+    use crate::dbschema::Comments::dsl::*;
+    use crate::dbschema::Posts::dsl::*;
+
+    // 获取要删除的评论
+    let comment_to_delete: models::Comment = Comments
+        .filter(schema::Comments::id.eq(comment_id))
+        .first(conn)?;
+
+    // 删除评论
+    diesel::delete(Comments.filter(schema::Comments::id.eq(comment_id))).execute(conn)?;
+
+    // 更新Post的comments_id字段
+    let new_comments_id = {
+        let mut current_comments_id: NullableIntArray = Posts
+            .filter(schema::Posts::id.eq(comment_to_delete.post_id))
+            .select(comments_id)
+            .first(conn)?;
+
+        // 从comments_id数组中移除要删除的评论ID
+        current_comments_id.0.retain(|&x| x != Some(comment_id));
+        current_comments_id
+    };
+
+    diesel::update(Posts.filter(schema::Posts::id.eq(comment_to_delete.post_id)))
+        .set(comments_id.eq(new_comments_id))
+        .execute(conn)?;
+
+    Ok(())
+}
+
+pub fn query_image_by_id(image_id: i32) -> Result<Vec<u8>, Box<dyn StdError>> {
+    //TODO: read file from local filesystem.
+    // Convert to bytes.
+    todo!()
+}
+
+pub fn add_image(image_id: i32, images: &Vec<u8>) -> Result<(), Box<dyn StdError>> {
+    //TODO: write file to local filesystem.
+
+    todo!()
+}
+
+pub fn delete_image(image_id: i32) -> Result<(), Box<dyn StdError>> {
+    //TODO: delete image from local filesystem
+    todo!()
 }
