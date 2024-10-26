@@ -27,14 +27,14 @@ impl Place {
     /// (if the ProtoBuf definition does not change) and safe for programmatic use.
     pub fn as_str_name(&self) -> &'static str {
         match self {
-            Self::JiaYuan => "JiaYuan",
-            Self::YiYuan => "YiYuan",
-            Self::ShaoYuan => "ShaoYuan",
-            Self::YanNan => "YanNan",
-            Self::NongYuan => "NongYuan",
-            Self::XueYi => "XueYi",
-            Self::XueWu => "XueWu",
-            Self::Other => "Other",
+            Place::JiaYuan => "JiaYuan",
+            Place::YiYuan => "YiYuan",
+            Place::ShaoYuan => "ShaoYuan",
+            Place::YanNan => "YanNan",
+            Place::NongYuan => "NongYuan",
+            Place::XueYi => "XueYi",
+            Place::XueWu => "XueWu",
+            Place::Other => "Other",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.

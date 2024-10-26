@@ -1,4 +1,3 @@
-use holopku::{auth::AuthService, check_envs};
 use holopku::codegen::auth::auth_server::AuthServer;
 use holopku::codegen::forum::forum_server::ForumServer;
 use holopku::codegen::hello::hello_server::HelloServer;
@@ -6,9 +5,9 @@ use holopku::db::DBClient;
 use holopku::forum::ForumService;
 use holopku::hello::HelloService;
 use holopku::middleware::auth_interceptor;
+use holopku::{auth::AuthService, check_envs};
 use log::trace;
 use std::env;
-use std::time::Duration;
 use tonic::transport::{Identity, Server, ServerTlsConfig};
 
 #[tokio::main]

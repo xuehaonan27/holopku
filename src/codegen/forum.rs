@@ -293,9 +293,9 @@ impl ListRequestType {
     /// (if the ProtoBuf definition does not change) and safe for programmatic use.
     pub fn as_str_name(&self) -> &'static str {
         match self {
-            Self::Star => "STAR",
-            Self::Takepart => "TAKEPART",
-            Self::Own => "OWN",
+            ListRequestType::Star => "STAR",
+            ListRequestType::Takepart => "TAKEPART",
+            ListRequestType::Own => "OWN",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
@@ -310,13 +310,7 @@ impl ListRequestType {
 }
 /// Generated client implementations.
 pub mod forum_client {
-    #![allow(
-        unused_variables,
-        dead_code,
-        missing_docs,
-        clippy::wildcard_imports,
-        clippy::let_unit_value,
-    )]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
     #[derive(Debug, Clone)]
@@ -410,7 +404,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -434,7 +429,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -458,7 +454,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -482,7 +479,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -503,7 +501,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -524,7 +523,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -548,7 +548,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -569,7 +570,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -593,7 +595,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -616,7 +619,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -639,7 +643,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -663,7 +668,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -684,7 +690,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -707,7 +714,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -728,7 +736,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -749,7 +758,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -770,7 +780,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -793,7 +804,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -814,7 +826,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -835,7 +848,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -856,7 +870,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -877,7 +892,8 @@ pub mod forum_client {
                 .ready()
                 .await
                 .map_err(|e| {
-                    tonic::Status::unknown(
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
                         format!("Service was not ready: {}", e.into()),
                     )
                 })?;
@@ -891,13 +907,7 @@ pub mod forum_client {
 }
 /// Generated server implementations.
 pub mod forum_server {
-    #![allow(
-        unused_variables,
-        dead_code,
-        missing_docs,
-        clippy::wildcard_imports,
-        clippy::let_unit_value,
-    )]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with ForumServer.
     #[async_trait]
@@ -2097,19 +2107,17 @@ pub mod forum_server {
                 }
                 _ => {
                     Box::pin(async move {
-                        let mut response = http::Response::new(empty_body());
-                        let headers = response.headers_mut();
-                        headers
-                            .insert(
-                                tonic::Status::GRPC_STATUS,
-                                (tonic::Code::Unimplemented as i32).into(),
-                            );
-                        headers
-                            .insert(
-                                http::header::CONTENT_TYPE,
-                                tonic::metadata::GRPC_CONTENT_TYPE,
-                            );
-                        Ok(response)
+                        Ok(
+                            http::Response::builder()
+                                .status(200)
+                                .header("grpc-status", tonic::Code::Unimplemented as i32)
+                                .header(
+                                    http::header::CONTENT_TYPE,
+                                    tonic::metadata::GRPC_CONTENT_TYPE,
+                                )
+                                .body(empty_body())
+                                .unwrap(),
+                        )
                     })
                 }
             }

@@ -4,7 +4,7 @@ use log::trace;
 use serde::{Deserialize, Serialize};
 use tonic::{Request, Status};
 
-use crate::crypto::encrypt_aes256;
+use crate::crypto::{decrypt_aes256, encrypt_aes256};
 use crate::{AUTHORIZATION_KEY, JWT_EXPIRE_TIME, JWT_ISSUER, JWT_SECRET};
 
 /// Authentication interceptor to verify JWT in the request.
@@ -19,6 +19,14 @@ pub fn auth_interceptor(request: Request<()>) -> Result<Request<()>, Status> {
         Some(token) => token.to_str().unwrap_or(""),
         None => return Err(Status::unauthenticated("Missing authorization header")),
     };
+
+    // decode JWT
+    let token = decrypt_aes256(token.as_bytes())
+        .map_err(|e| Status::unauthenticated(format!("Fail to decode token: {e}")))?;
+    // [`std::mem::transmute`] no panic
+    // TODO: change `jwt` crate [`jsonwebtoken::decoding::decode`] API to `decode_bytes` or something
+    // when this API is available.
+    let token = unsafe { std::str::from_utf8_unchecked(&token) };
 
     // verify JWT
     if let Ok(claims) = validate_jwt(token) {
