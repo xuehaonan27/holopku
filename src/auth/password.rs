@@ -13,12 +13,10 @@ pub(super) async fn login_password(
     req: LoginRequest,
 ) -> Result<LoginResponse, Status> {
     let username = &req.username;
-    let dbuser = get_password_user_from_db(conn, username)
-        .await
-        .map_err(|e| {
-            error!("User {username} not found: {e}");
-            Status::not_found("No such user")
-        })?;
+    let dbuser = get_password_user_from_db(conn, username).map_err(|e| {
+        error!("User {username} not found: {e}");
+        Status::not_found("No such user")
+    })?;
 
     let hash = dbuser.password.as_ref().ok_or_else(|| {
         error!("User without password");
@@ -72,7 +70,7 @@ pub(super) async fn register_password(
         Status::internal("Fail to register new user")
     })?;
 
-    if get_password_user_from_db(conn, &req.username).await.is_ok() {
+    if get_password_user_from_db(conn, &req.username).is_ok() {
         error!("User {} exist", req.username);
         return Err(Status::unavailable("User exist"));
     }
@@ -85,12 +83,10 @@ pub(super) async fn register_password(
         nickname: "".into(),
     };
 
-    let _ = insert_password_user_into_db(conn, &new_user)
-        .await
-        .map_err(|e| {
-            error!("Fail to register new user {new_user:#?}: {e}");
-            Status::internal("Fail to register new user")
-        })?;
+    let _ = insert_password_user_into_db(conn, &new_user).map_err(|e| {
+        error!("Fail to register new user {new_user:#?}: {e}");
+        Status::internal("Fail to register new user")
+    })?;
 
     let response = RegisterResponse {
         success: true,

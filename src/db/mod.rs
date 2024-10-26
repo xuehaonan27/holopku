@@ -2,6 +2,8 @@
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 use diesel::PgConnection;
+use models::NullableIntArray;
+use schema::Posts::comments_id;
 
 use std::error::Error as StdError;
 
@@ -46,7 +48,7 @@ impl DBClient {
     }
 }
 
-pub async fn get_iaaa_user_from_db(
+pub fn get_iaaa_user_from_db(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     resp: IAAAValidateResponse,
 ) -> Result<models::User, Box<dyn StdError>> {
@@ -77,7 +79,7 @@ pub async fn get_iaaa_user_from_db(
     Ok(dbuser)
 }
 
-pub async fn get_password_user_from_db(
+pub fn get_password_user_from_db(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     user_name: &String,
 ) -> Result<models::User, Box<dyn StdError>> {
@@ -90,7 +92,7 @@ pub async fn get_password_user_from_db(
     Ok(dbuser)
 }
 
-pub async fn insert_password_user_into_db(
+pub fn insert_password_user_into_db(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     new_user: &models::PasswordNewUser,
 ) -> Result<models::User, Box<dyn StdError>> {
@@ -100,4 +102,38 @@ pub async fn insert_password_user_into_db(
         .returning(models::User::as_returning())
         .get_result(conn)?;
     Ok(new_user)
+}
+
+pub fn insert_post(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    new_post: &models::Post,
+) -> Result<models::Post, Box<dyn StdError>> {
+    use crate::dbschema::Posts::dsl::*;
+    let new_post = diesel::insert_into(Posts)
+        .values(new_post)
+        .returning(models::Post::as_returning())
+        .get_result(conn)?;
+    Ok(new_post)
+}
+
+pub fn delete_post(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    post_id: i32,
+) -> Result<(), Box<dyn StdError>> {
+    use crate::dbschema::Posts::dsl::*;
+    diesel::delete(Posts.filter(id.eq(post_id))).execute(conn)?;
+    Ok(())
+}
+
+pub fn query_post_by_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    post_id: i32,
+) -> Result<models::Post, Box<dyn StdError>> {
+    use crate::dbschema::Posts::dsl::*;
+    let post: models::Post = Posts
+        .filter(schema::Posts::id.eq(&post_id))
+        .select(models::Post::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    Ok(post)
 }

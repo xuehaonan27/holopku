@@ -109,7 +109,7 @@ pub struct Post {
     pub sold: Option<bool>,
 }
 
-#[derive(Debug, PartialEq, Queryable, Identifiable, Selectable, AsChangeset)]
+#[derive(Debug, PartialEq, Queryable, Identifiable, Selectable, AsChangeset, Insertable)]
 #[diesel(table_name = crate::dbschema::Comments)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Comment {

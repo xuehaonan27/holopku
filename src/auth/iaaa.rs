@@ -90,7 +90,6 @@ pub(super) async fn login_iaaa(
     }
 
     let dbuser = get_iaaa_user_from_db(conn, resp)
-        .await
         .map_err(|_| Status::unauthenticated("Fail to find user or auto-register for IAAA user"))?;
 
     let created_at: i64 = dbuser.created_at.and_utc().timestamp();
