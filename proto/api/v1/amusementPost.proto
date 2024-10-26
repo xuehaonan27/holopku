@@ -19,8 +19,8 @@ message AmusementPost{
     post.Post post = 1;
     int32 people_all = 2;
     int32 people_already = 3;
-    GameType type = 4;
-    int32 time = 5;
-    string place = 6;
+    GameType game_type = 4;
+    int64 start_time = 5;
+    string amuse_place = 6;
     string contact = 7;
 }

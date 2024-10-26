@@ -8,7 +8,7 @@ pub struct SellPost {
     #[prost(int32, tag = "3")]
     pub price: i32,
     #[prost(enumeration = "GoodsType", tag = "4")]
-    pub r#type: i32,
+    pub goods_type: i32,
     #[prost(bool, tag = "5")]
     pub sold: bool,
 }

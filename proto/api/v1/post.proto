@@ -18,7 +18,7 @@ message Post {
     int32 created_at = 9;
     optional int32 updated_at = 10;
     repeated Comment comments = 8; // MANAGED BY FOREIGN KEYS
-    repeated string images = 5; // MANAGED BY FOREIGN KEYS
+    repeated bytes images = 5; // MANAGED BY FOREIGN KEYS
     PostType post_type = 11;
 }
 

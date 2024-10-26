@@ -19,7 +19,6 @@ enum Place{
 
 message FoodPost{
     post.Post post = 1;
-    Place place = 2;
+    Place food_place = 2;
     int32 score = 3;
 }
-

@@ -8,11 +8,11 @@ pub struct AmusementPost {
     #[prost(int32, tag = "3")]
     pub people_already: i32,
     #[prost(enumeration = "GameType", tag = "4")]
-    pub r#type: i32,
-    #[prost(int32, tag = "5")]
-    pub time: i32,
+    pub game_type: i32,
+    #[prost(int64, tag = "5")]
+    pub start_time: i64,
     #[prost(string, tag = "6")]
-    pub place: ::prost::alloc::string::String,
+    pub amuse_place: ::prost::alloc::string::String,
     #[prost(string, tag = "7")]
     pub contact: ::prost::alloc::string::String,
 }

@@ -21,8 +21,8 @@ pub struct Post {
     #[prost(message, repeated, tag = "8")]
     pub comments: ::prost::alloc::vec::Vec<Comment>,
     /// MANAGED BY FOREIGN KEYS
-    #[prost(string, repeated, tag = "5")]
-    pub images: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(bytes = "vec", repeated, tag = "5")]
+    pub images: ::prost::alloc::vec::Vec<::prost::alloc::vec::Vec<u8>>,
     #[prost(enumeration = "PostType", tag = "11")]
     pub post_type: i32,
 }

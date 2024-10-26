@@ -4,7 +4,7 @@ pub struct FoodPost {
     #[prost(message, optional, tag = "1")]
     pub post: ::core::option::Option<super::post::Post>,
     #[prost(enumeration = "Place", tag = "2")]
-    pub place: i32,
+    pub food_place: i32,
     #[prost(int32, tag = "3")]
     pub score: i32,
 }
