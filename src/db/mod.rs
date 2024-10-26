@@ -215,6 +215,19 @@ pub fn delete_comment_and_update_post(
     Ok(())
 }
 
+pub fn query_post_by_user_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    the_user_id: i32,
+) -> Result<Vec<models::Post>, Box<dyn StdError>> {
+    use crate::dbschema::Posts::dsl::*;
+    let posts = Posts
+        .filter(schema::Posts::user_id.eq(&the_user_id))
+        .select(models::Post::as_select())
+        .load(conn)
+        .map_err(|e| e.to_string())?;
+    Ok(posts)
+}
+
 pub fn query_image_by_id(image_id: i32) -> Result<Vec<u8>, Box<dyn StdError>> {
     //TODO: read file from local filesystem.
     // Convert to bytes.
