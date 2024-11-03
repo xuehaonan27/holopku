@@ -13,10 +13,10 @@ pub struct Post {
     pub likes: i32,
     #[prost(int32, tag = "7")]
     pub favorates: i32,
-    #[prost(int32, tag = "9")]
-    pub created_at: i32,
-    #[prost(int32, optional, tag = "10")]
-    pub updated_at: ::core::option::Option<i32>,
+    #[prost(int64, tag = "9")]
+    pub created_at: i64,
+    #[prost(int64, optional, tag = "10")]
+    pub updated_at: ::core::option::Option<i64>,
     /// MANAGED BY FOREIGN KEYS
     #[prost(message, repeated, tag = "8")]
     pub comments: ::prost::alloc::vec::Vec<Comment>,
@@ -57,9 +57,9 @@ impl PostType {
     /// (if the ProtoBuf definition does not change) and safe for programmatic use.
     pub fn as_str_name(&self) -> &'static str {
         match self {
-            PostType::Foodpost => "FOODPOST",
-            PostType::Sellpost => "SELLPOST",
-            PostType::Amusementpost => "AMUSEMENTPOST",
+            Self::Foodpost => "FOODPOST",
+            Self::Sellpost => "SELLPOST",
+            Self::Amusementpost => "AMUSEMENTPOST",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
