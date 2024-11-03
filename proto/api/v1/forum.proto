@@ -117,7 +117,7 @@ message ListAmusementPostsRequest{
     int32 people_all_lowbound = 2; 
     int32 people_all_upbound = 3;
     int32 people_diff_upbound = 4; 
-    int64 time_about = 5;
+    int32 time_about = 5;
     int32 number = 6;
 }
 

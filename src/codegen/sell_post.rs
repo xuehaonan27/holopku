@@ -28,11 +28,11 @@ impl GoodsType {
     /// (if the ProtoBuf definition does not change) and safe for programmatic use.
     pub fn as_str_name(&self) -> &'static str {
         match self {
-            Self::Ticket => "Ticket",
-            Self::Book => "Book",
-            Self::Display => "Display",
-            Self::Computer => "Computer",
-            Self::Other => "Other",
+            GoodsType::Ticket => "Ticket",
+            GoodsType::Book => "Book",
+            GoodsType::Display => "Display",
+            GoodsType::Computer => "Computer",
+            GoodsType::Other => "Other",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.

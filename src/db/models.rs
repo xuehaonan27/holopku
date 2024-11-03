@@ -1,4 +1,3 @@
-use crate::codegen::amusement_post::AmusementPost;
 use crate::dbschema::sql_types::GameType as GameTypeSql;
 use crate::dbschema::sql_types::GoodsType as GoodsTypeSql;
 use crate::dbschema::sql_types::LoginProvider as LoginProviderType;
@@ -13,8 +12,6 @@ use diesel::sql_types::{Array, Nullable};
 use diesel::*;
 use sql_types::Integer;
 use std::io::Write;
-
-use super::schema::Posts::game_type;
 
 #[derive(Debug, PartialEq, FromSqlRow, AsExpression, Eq)]
 #[diesel(sql_type = LoginProviderType)]
@@ -112,24 +109,6 @@ pub struct Post {
     pub sold: Option<bool>,
 }
 
-#[derive(Debug, Insertable)]
-#[diesel(table_name = crate::dbschema::Posts)]
-pub struct NewAmusementPost {
-    pub title: String,
-    pub user_id: i32,
-    pub content: String,
-    pub comments_id: NullableIntArray,
-    pub images: NullableIntArray,
-    pub post_type: PostType,
-    pub contact: Option<String>,
-
-    pub people_all: Option<i32>,
-    pub people_already: Option<i32>,
-    pub game_type: Option<GameType>,
-    pub start_time: Option<NaiveDateTime>,
-    pub amuse_place: Option<String>,
-}
-
 #[derive(Debug, PartialEq, Queryable, Identifiable, Selectable, AsChangeset, Insertable)]
 #[diesel(table_name = crate::dbschema::Comments)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -143,31 +122,12 @@ pub struct Comment {
     pub updated_at: Option<NaiveDateTime>,
 }
 
-#[derive(Debug, Insertable)]
-#[diesel(table_name = crate::dbschema::Comments)]
-pub struct NewComment {
-    pub post_id: i32,
-    pub user_id: i32,
-    pub content: String,
-}
-
 #[derive(Debug, PartialEq, FromSqlRow, AsExpression, Eq)]
 #[diesel(sql_type = PostTypeSql)]
 pub enum PostType {
     FOODPOST,
     SELLPOST,
     AMUSEMENTPOST,
-}
-
-impl PostType {
-    pub fn to_proto_type(&self) -> crate::codegen::post::PostType {
-        use crate::codegen::post;
-        match *self {
-            PostType::FOODPOST => post::PostType::Foodpost,
-            PostType::AMUSEMENTPOST => post::PostType::Amusementpost,
-            PostType::SELLPOST => post::PostType::Sellpost,
-        }
-    }
 }
 
 impl ToSql<PostTypeSql, Pg> for PostType {
@@ -254,36 +214,6 @@ pub enum GameType {
     Sports,
     Riding,
     Other,
-}
-
-// GameType defined here and GameType defined in proto are diffrent, so impl to convert it
-impl GameType {
-    pub fn to_proto_type(&self) -> crate::codegen::amusement_post::GameType {
-        use crate::codegen::amusement_post;
-        match *self {
-            GameType::WolfKill => amusement_post::GameType::WolfKill,
-            GameType::JvBen => amusement_post::GameType::JvBen,
-            GameType::BloodTower => amusement_post::GameType::BloodTower,
-            GameType::Karaok => amusement_post::GameType::Karaok,
-            GameType::BoardGame => amusement_post::GameType::BoardGame,
-            GameType::Sports => amusement_post::GameType::Sports,
-            GameType::Riding => amusement_post::GameType::Riding,
-            GameType::Other => amusement_post::GameType::Other,
-        }
-    }
-    pub fn from_proto_type(proto_game_type: &crate::codegen::amusement_post::GameType) -> GameType {
-        use crate::codegen::amusement_post;
-        match *proto_game_type {
-            amusement_post::GameType::WolfKill => GameType::WolfKill,
-            amusement_post::GameType::JvBen => GameType::JvBen,
-            amusement_post::GameType::BloodTower => GameType::BloodTower,
-            amusement_post::GameType::BoardGame => GameType::BoardGame,
-            amusement_post::GameType::Karaok => GameType::Karaok,
-            amusement_post::GameType::Riding => GameType::Riding,
-            amusement_post::GameType::Sports => GameType::Sports,
-            amusement_post::GameType::Other => GameType::Other,
-        }
-    }
 }
 
 impl ToSql<GameTypeSql, Pg> for GameType {
