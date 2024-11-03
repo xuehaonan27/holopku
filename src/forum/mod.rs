@@ -1,6 +1,16 @@
+use chrono::{NaiveDateTime, Utc};
+use diesel::Identifiable;
 use log::{error, trace};
+use models::NewAmusementPost;
+use models::NullableIntArray;
+use models::PostType;
+use schema::Posts::comments_id;
+use schema::Posts::images;
+use schema::Posts::people_all;
 use tonic::{Request, Response, Status};
 
+use crate::codegen::amusement_post;
+use crate::codegen::amusement_post::AmusementPost;
 use crate::codegen::forum::forum_server::Forum;
 use crate::codegen::forum::CreateAmusementPostRequest;
 use crate::codegen::forum::CreateFoodPostRequest;
@@ -26,8 +36,10 @@ use crate::codegen::forum::{TakePartAmusePostRequest, TakePartAmusePostResponse}
 use crate::codegen::forum::{UnfavorateRequest, UnfavorateResponse};
 use crate::codegen::forum::{UnlikeCommentRequest, UnlikeCommentResponse};
 use crate::codegen::forum::{UnlikePostRequest, UnlikePostResponse};
+use crate::codegen::post::Post;
+use crate::db::*;
 
-use crate::db::models::Post;
+use crate::db::models::NewComment;
 use crate::db::schema::Comments::user_id;
 use crate::db::DBClient;
 
@@ -45,7 +57,35 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("DeletePost got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to delete post")
+        })?;
+
+        // delete the post from Db and get the post
+        let post_id = req.post_id;
+        let the_post = delete_post(conn, post_id).map_err(|e| {
+            error!("Fail to delete post {post_id}: {e}");
+            Status::not_found("No such post")
+        })?;
+
+        // make response
+        let response = DeletePostResponse { success: true };
+
+        // delete images of the post
+        let image_ids = the_post.images.0;
+        for image_id in image_ids {
+            if let Some(image_id) = image_id {
+                let _delete_image_result = delete_image(image_id).map_err(|e| {
+                    error!("Fail to delete image {image_id}: {e}");
+                    // Status::not_found("No such image")
+                });
+                // delete image fail should not be reported to frontend
+            }
+        }
+
+        Ok(Response::new(response))
     }
 
     async fn list_personal_posts(
@@ -55,6 +95,18 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("ListPersonalPost got request: {req:#?}");
 
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to list personal post")
+        })?;
+
+        let the_user_id = req.user_id();
+        let post_type = req.post_type();
+        let request_type = req.r#type(); // own? star? takepart?
+        let number = req.number;
+
+        // need data struct about user
         todo!();
     }
 
@@ -65,7 +117,27 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("Comment got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        // make insertable comment
+        let comment = NewComment {
+            post_id: req.post_id,
+            user_id: req.user_id,
+            content: req.content,
+        };
+
+        // insert and update post
+        insert_comment_and_update_post(conn, &comment).map_err(|e| {
+            error!("Fail to insert comment to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        let response = CommentResponse { success: true };
+        Ok(Response::new(response))
     }
 
     async fn delete_comment(
@@ -75,7 +147,22 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("DeleteComment got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        // delete the comment
+        let comment_id_to_delete = req.comment_id;
+        delete_comment_and_update_post(conn, comment_id_to_delete).map_err(|e| {
+            error!("Fail to delete comment from database: {e}");
+            Status::internal("Fail to delete comment")
+        })?;
+
+        let response = DeleteCommentResponse { success: true };
+
+        Ok(Response::new(response))
     }
 
     async fn like_post(
@@ -85,6 +172,7 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("LikePost got request: {req:#?}");
 
+        // need data struct about user
         todo!();
     }
 
@@ -95,6 +183,7 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("UnlikePost got request: {req:#?}");
 
+        // need data struct about user
         todo!();
     }
 
@@ -105,6 +194,7 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("LikeComment got request: {req:#?}");
 
+        // need data struct about user, or change of 'Comment' data struct
         todo!();
     }
 
@@ -115,6 +205,7 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("UnlikeComment got request: {req:#?}");
 
+        // need data struct about user, or change of 'Comment' data struct
         todo!();
     }
 
@@ -125,6 +216,7 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("Favorate got request: {req:#?}");
 
+        // need data struct about user
         todo!();
     }
 
@@ -135,6 +227,7 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("Unfavorate got request: {req:#?}");
 
+        // need data struct about user
         todo!();
     }
 
@@ -147,8 +240,30 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("CreateAmusementPost got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        let new_post = models::Post::from_proto_amusement_post(req.post).map_err(|e| {
+            error!("Fail to convert to amusement post: {e}");
+            Status::internal("Fail to create amusement post")
+        })?;
+
+        let the_post = insert_amusement_post(conn, &new_post).map_err(|e| {
+            error!("Fail to insert amusement post to database: {e}");
+            Status::internal("Fail to create amusement post")
+        })?;
+
+        let response = CreatePostResponse {
+            success: true,
+            post_id: the_post.id,
+            message: "".into(),
+        };
+        Ok(Response::new(response))
     }
+
     async fn get_amusement_post(
         &self,
         request: tonic::Request<GetPostRequest>,
@@ -156,8 +271,35 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("GetAmusementPost got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        let the_post_id = req.post_id;
+
+        let the_post = query_post_by_id(conn, the_post_id).map_err(|e| {
+            error!("Fail to get post from database: {e}");
+            Status::internal("Fail to get post")
+        })?;
+
+        if the_post.post_type != models::PostType::AMUSEMENTPOST {
+            error!("Fail to get post from database: Wrong post type");
+            Err(Status::internal("Fail to get post of amusement post"))
+        } else {
+            let the_post = the_post.to_proto_amusement_post(conn).map_err(|e| {
+                error!("Fail to get post from database: {e}");
+                Status::internal("Fail to get post of amusement post")
+            })?;
+            let response = GetAmusementPostResponse {
+                success: true,
+                post: Some(the_post),
+            };
+            Ok(Response::new(response))
+        }
     }
+
     async fn list_amusement_posts(
         &self,
         request: tonic::Request<ListAmusementPostsRequest>,
@@ -165,8 +307,40 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("ListAmusementPost got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        let post_vec = query_and_filter_amusement_post(
+            conn,
+            models::GameType::from_proto_type(&req.game_type()),
+            req.people_all_lowbound,
+            req.people_all_upbound,
+            req.people_diff_upbound,
+            NaiveDateTime::from_timestamp(req.time_about, 0),
+            req.number,
+        )
+        .map_err(|e| {
+            error!("Fail to query from database: {e}");
+            Status::internal("Fail get amusement posts")
+        })?;
+
+        let mut posts = vec![];
+        for post in post_vec {
+            let post = post.to_proto_amusement_post(conn).map_err(|e| {
+                error!("Fail to convert to amusement post: {e}");
+                Status::internal("Fail get amusement posts")
+            })?;
+            posts.push(post);
+        }
+
+        let response = ListAmusementPostsResponse { posts: posts };
+
+        Ok(Response::new(response))
     }
+
     async fn take_part(
         &self,
         request: tonic::Request<TakePartAmusePostRequest>,
@@ -174,6 +348,7 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("TakePart got request: {req:#?}");
 
+        // need data struct about user
         todo!();
     }
 
@@ -184,6 +359,7 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("NoTakePart got request: {req:#?}");
 
+        // need data struct about user
         todo!();
     }
 
