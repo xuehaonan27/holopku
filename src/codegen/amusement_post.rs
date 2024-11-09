@@ -35,14 +35,14 @@ impl GameType {
     /// (if the ProtoBuf definition does not change) and safe for programmatic use.
     pub fn as_str_name(&self) -> &'static str {
         match self {
-            GameType::WolfKill => "WolfKill",
-            GameType::JvBen => "JvBen",
-            GameType::BloodTower => "BloodTower",
-            GameType::Karaok => "Karaok",
-            GameType::BoardGame => "BoardGame",
-            GameType::Sports => "Sports",
-            GameType::Riding => "Riding",
-            GameType::Other => "Other",
+            Self::WolfKill => "WolfKill",
+            Self::JvBen => "JvBen",
+            Self::BloodTower => "BloodTower",
+            Self::Karaok => "Karaok",
+            Self::BoardGame => "BoardGame",
+            Self::Sports => "Sports",
+            Self::Riding => "Riding",
+            Self::Other => "Other",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.

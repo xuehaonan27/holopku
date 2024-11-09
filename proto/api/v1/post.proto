@@ -15,8 +15,8 @@ message Post {
     string content = 4;
     int32 likes = 6;
     int32 favorates = 7;
-    int32 created_at = 9;
-    optional int32 updated_at = 10;
+    int64 created_at = 9;
+    optional int64 updated_at = 10;
     repeated Comment comments = 8; // MANAGED BY FOREIGN KEYS
     repeated bytes images = 5; // MANAGED BY FOREIGN KEYS
     PostType post_type = 11;
