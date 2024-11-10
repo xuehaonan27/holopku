@@ -15,17 +15,26 @@ use crate::{AUTHORIZATION_KEY, JWT_EXPIRE_TIME, JWT_ISSUER, JWT_SECRET};
 pub fn auth_interceptor(request: Request<()>) -> Result<Request<()>, Status> {
     trace!("Auth intercepting request: {:?}", request);
 
-    let token = match request.metadata().get(AUTHORIZATION_KEY) {
-        Some(token) => token.to_str().unwrap_or(""),
+    /*
+    // ignoring auth, when testing
+    Ok(request)
+    */
+
+    // it's binary so use get_bin
+    let token = match request.metadata().get_bin(AUTHORIZATION_KEY) {
+        Some(token) => token,
         None => return Err(Status::unauthenticated("Missing authorization header")),
     };
-
+    let tokenvec: Vec<u8> = token.to_bytes().unwrap().into();
+    // can see that it's the same as token sent out
+    println!("tokenvec is {:?}", tokenvec);
     // decode JWT
-    let token = decrypt_aes256(token.as_bytes())
+    let token = decrypt_aes256(&token.to_bytes().unwrap_or(prost::bytes::Bytes::new()))
         .map_err(|e| Status::unauthenticated(format!("Fail to decode token: {e}")))?;
     // [`std::mem::transmute`] no panic
     // TODO: change `jwt` crate [`jsonwebtoken::decoding::decode`] API to `decode_bytes` or something
     // when this API is available.
+
     let token = unsafe { std::str::from_utf8_unchecked(&token) };
 
     // verify JWT
