@@ -86,7 +86,7 @@ CREATE TABLE "Comments" (
 CREATE OR REPLACE FUNCTION check_comments_ids() RETURNS TRIGGER AS $$
 BEGIN
     -- 检查 comments_id 数组中的每个值是否存在于 Comments 表中
-    IF NEW.comments_id IS NOT NULL THEN
+    IF NEW.comments_id IS NOT NULL AND NEW.comments_id <> '{}' THEN
         FOR i IN 1..array_length(NEW.comments_id, 1) LOOP
             IF NOT EXISTS (SELECT 1 FROM "Comments" WHERE id = NEW.comments_id[i]) THEN
                 RAISE EXCEPTION 'Invalid comment id: %', NEW.comments_id[i];

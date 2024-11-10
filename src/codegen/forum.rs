@@ -93,8 +93,8 @@ pub mod list_personal_posts_response {
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct ListFoodPostsRequest {
     /// food post
-    #[prost(enumeration = "super::food_post::Place", tag = "1")]
-    pub food_place: i32,
+    #[prost(enumeration = "super::food_post::Place", optional, tag = "1")]
+    pub food_place: ::core::option::Option<i32>,
     #[prost(int32, tag = "2")]
     pub score_lowbond: i32,
     #[prost(bool, tag = "3")]
@@ -105,8 +105,8 @@ pub struct ListFoodPostsRequest {
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct ListSellPostsRequest {
     /// sell post
-    #[prost(enumeration = "super::sell_post::GoodsType", tag = "1")]
-    pub goods_type: i32,
+    #[prost(enumeration = "super::sell_post::GoodsType", optional, tag = "1")]
+    pub goods_type: ::core::option::Option<i32>,
     #[prost(int32, tag = "2")]
     pub price_upbond: i32,
     #[prost(int32, tag = "3")]
@@ -115,16 +115,16 @@ pub struct ListSellPostsRequest {
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct ListAmusementPostsRequest {
     /// amusement post
-    #[prost(enumeration = "super::amusement_post::GameType", tag = "1")]
-    pub game_type: i32,
+    #[prost(enumeration = "super::amusement_post::GameType", optional, tag = "1")]
+    pub game_type: ::core::option::Option<i32>,
     #[prost(int32, tag = "2")]
     pub people_all_lowbound: i32,
     #[prost(int32, tag = "3")]
     pub people_all_upbound: i32,
     #[prost(int32, tag = "4")]
     pub people_diff_upbound: i32,
-    #[prost(int64, tag = "5")]
-    pub time_about: i64,
+    #[prost(int64, optional, tag = "5")]
+    pub time_about: ::core::option::Option<i64>,
     #[prost(int32, tag = "6")]
     pub number: i32,
 }

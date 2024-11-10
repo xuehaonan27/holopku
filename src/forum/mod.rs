@@ -7,6 +7,7 @@ use models::PostType;
 use schema::Posts::comments_id;
 use schema::Posts::images;
 use schema::Posts::people_all;
+use schema::Posts::sold;
 use tonic::{Request, Response, Status};
 
 use crate::codegen::amusement_post;
@@ -315,11 +316,21 @@ impl Forum for ForumService {
 
         let post_vec = query_and_filter_amusement_post(
             conn,
-            models::GameType::from_proto_type(&req.game_type()),
+            if req.game_type.is_some() {
+                Some(models::GameType::from_proto_type(&req.game_type()))
+            //safe unwrap
+            } else {
+                None
+            },
             req.people_all_lowbound,
             req.people_all_upbound,
             req.people_diff_upbound,
-            NaiveDateTime::from_timestamp(req.time_about, 0),
+            if req.time_about.is_some() {
+                Some(NaiveDateTime::from_timestamp(req.time_about.unwrap(), 0))
+            //safe unwrap
+            } else {
+                None
+            },
             req.number,
         )
         .map_err(|e| {
@@ -372,8 +383,30 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("CreateFoodPost got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to create food post")
+        })?;
+
+        let new_post = models::Post::from_proto_food_post(req.post).map_err(|e| {
+            error!("Fail to convert to food post: {e}");
+            Status::internal("Fail to create food post")
+        })?;
+
+        let the_post = insert_food_post(conn, &new_post).map_err(|e| {
+            error!("Fail to insert food post to database: {e}");
+            Status::internal("Fail to create food post")
+        })?;
+
+        let response = CreatePostResponse {
+            success: true,
+            post_id: the_post.id,
+            message: "".into(),
+        };
+        Ok(Response::new(response))
     }
+
     async fn get_food_post(
         &self,
         request: tonic::Request<GetPostRequest>,
@@ -381,8 +414,35 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("GetFoodPost got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        let the_post_id = req.post_id;
+
+        let the_post = query_post_by_id(conn, the_post_id).map_err(|e| {
+            error!("Fail to get post from database: {e}");
+            Status::internal("Fail to get post")
+        })?;
+
+        if the_post.post_type != models::PostType::FOODPOST {
+            error!("Fail to get post from database: Wrong post type");
+            Err(Status::internal("Fail to get post of food post"))
+        } else {
+            let the_post = the_post.to_proto_food_post(conn).map_err(|e| {
+                error!("Fail to get post from database: {e}");
+                Status::internal("Fail to get post of food post")
+            })?;
+            let response = GetFoodPostResponse {
+                success: true,
+                post: Some(the_post),
+            };
+            Ok(Response::new(response))
+        }
     }
+
     async fn list_food_posts(
         &self,
         request: tonic::Request<ListFoodPostsRequest>,
@@ -390,7 +450,40 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("ListFoodPost got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        let post_vec = query_and_filter_food_post(
+            conn,
+            if req.food_place.is_some() {
+                Some(models::Place::from_proto_type(&req.food_place()))
+            } else {
+                None
+            },
+            req.score_lowbond,
+            req.random,
+            req.number,
+        )
+        .map_err(|e| {
+            error!("Fail to query from database: {e}");
+            Status::internal("Fail get food posts")
+        })?;
+
+        let mut posts = vec![];
+        for post in post_vec {
+            let post = post.to_proto_food_post(conn).map_err(|e| {
+                error!("Fail to convert to food post: {e}");
+                Status::internal("Fail get food posts")
+            })?;
+            posts.push(post);
+        }
+
+        let response = ListFoodPostsResponse { posts: posts };
+
+        Ok(Response::new(response))
     }
 
     // about sell
@@ -402,7 +495,28 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("CreateSellPost got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        let new_post = models::Post::from_proto_sell_post(req.post).map_err(|e| {
+            error!("Fail to convert to sell post: {e}");
+            Status::internal("Fail to create sell post")
+        })?;
+
+        let the_post = insert_sell_post(conn, &new_post).map_err(|e| {
+            error!("Fail to insert sell post to database: {e}");
+            Status::internal("Fail to create sell post")
+        })?;
+
+        let response = CreatePostResponse {
+            success: true,
+            post_id: the_post.id,
+            message: "".into(),
+        };
+        Ok(Response::new(response))
     }
     async fn get_sell_post(
         &self,
@@ -411,7 +525,33 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("GetSellPost got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        let the_post_id = req.post_id;
+
+        let the_post = query_post_by_id(conn, the_post_id).map_err(|e| {
+            error!("Fail to get post from database: {e}");
+            Status::internal("Fail to get post")
+        })?;
+
+        if the_post.post_type != models::PostType::SELLPOST {
+            error!("Fail to get post from database: Wrong post type");
+            Err(Status::internal("Fail to get post of sell post"))
+        } else {
+            let the_post = the_post.to_proto_sell_post(conn).map_err(|e| {
+                error!("Fail to get post from database: {e}");
+                Status::internal("Fail to get post of sell post")
+            })?;
+            let response = GetSellPostResponse {
+                success: true,
+                post: Some(the_post),
+            };
+            Ok(Response::new(response))
+        }
     }
     async fn list_sell_posts(
         &self,
@@ -420,8 +560,41 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("ListSellPost got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        let post_vec = query_and_filter_sell_post(
+            conn,
+            if req.goods_type.is_some() {
+                Some(models::GoodsType::from_proto_type(&req.goods_type()))
+            } else {
+                None
+            },
+            req.price_upbond,
+            req.number,
+        )
+        .map_err(|e| {
+            error!("Fail to query from database: {e}");
+            Status::internal("Fail get food posts")
+        })?;
+
+        let mut posts = vec![];
+        for post in post_vec {
+            let post = post.to_proto_sell_post(conn).map_err(|e| {
+                error!("Fail to convert to food post: {e}");
+                Status::internal("Fail get food posts")
+            })?;
+            posts.push(post);
+        }
+
+        let response = ListSellPostsResponse { posts: posts };
+
+        Ok(Response::new(response))
     }
+
     async fn set_sold(
         &self,
         request: tonic::Request<SetSoldRequest>,
@@ -429,6 +602,19 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("SetSold got request: {req:#?}");
 
-        todo!();
+        // get connection to Db
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+        let post_id = req.post_id;
+
+        set_sold_for_sell_post_by_id(conn, post_id).map_err(|e| {
+            error!("Fail to convert to food post: {e}");
+            Status::internal("Fail get food posts")
+        })?;
+
+        let response = SetSoldResponse { success: true };
+        Ok(Response::new(response))
     }
 }

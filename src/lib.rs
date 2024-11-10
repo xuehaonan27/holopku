@@ -1,10 +1,10 @@
 pub mod codegen {
+    pub mod amusement_post;
     pub mod auth;
+    pub mod food_post;
     pub mod forum;
     pub mod hello;
     pub mod post;
-    pub mod amusement_post;
-    pub mod food_post;
     pub mod sell_post;
 }
 
@@ -19,7 +19,7 @@ use log::info;
 use std::env;
 use std::sync::LazyLock;
 
-pub const AUTHORIZATION_KEY: &'static str = "Authorization";
+pub const AUTHORIZATION_KEY: &'static str = "holopku-authorization-bin";
 const JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
     let jwt_secret = std::env::var("JWT_SECRET").expect("Must set JWT_SECRET");
     jwt_secret

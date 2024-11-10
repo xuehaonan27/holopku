@@ -1,10 +1,14 @@
 use holopku::codegen::auth::auth_client::AuthClient;
 use holopku::codegen::auth::{GetUserRequest, LoginProvider, LoginRequest, RegisterRequest};
+use holopku::codegen::food_post::FoodPost;
 use holopku::codegen::forum::forum_client::ForumClient;
+use holopku::codegen::post::Post;
 // use holopku::codegen::forum::CreatePostRequest;
 use holopku::AUTHORIZATION_KEY;
+use hyper::client::conn::http1;
+use hyper::header::HeaderValue;
 use hyper_util::rt::TokioExecutor;
-use tonic::metadata::MetadataValue;
+use tonic::metadata::{MetadataKey, MetadataValue};
 use tonic::{IntoRequest, Request};
 use tonic_web::GrpcWebClientLayer;
 
@@ -89,20 +93,67 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("*** FORUM CLIENT ***");
     println!("Try CreatePost request");
 
-    // let response = forum_client
-    //     .create_post({
-    //         let mut create_post = CreatePostRequest {
-    //             user_id,
-    //             title: "NewPostTitle".into(),
-    //             content: "This is my new post!".into(),
-    //             images: vec![],
-    //         }
-    //         .into_request();
-    //         let metadata = create_post.metadata_mut();
-    //         metadata.append_bin(AUTHORIZATION_KEY, MetadataValue::from_bytes(&token));
-    //         create_post
-    //     })
-    //     .await;
-    // println!("RESPONSE = {:?}", response);
+    let response = forum_client
+        .create_food_post({
+            let mut create_post = holopku::codegen::forum::CreateFoodPostRequest {
+                post: Some(FoodPost {
+                    post: Some(Post {
+                        id: 1,
+                        title: "first post--test".into(),
+                        user_id: user_id,
+                        content: "this is the first post to test".into(),
+                        likes: 0,
+                        favorates: 0,
+                        created_at: 0,
+                        updated_at: None,
+                        comments: vec![],
+                        images: vec![],
+                        post_type: holopku::codegen::post::PostType::Foodpost.into(),
+                    }),
+                    food_place: holopku::codegen::food_post::Place::JiaYuan.into(),
+                    score: 0,
+                }),
+            }
+            .into_request();
+            let metadata = create_post.metadata_mut();
+            metadata.append_bin(AUTHORIZATION_KEY, MetadataValue::from_bytes(&token));
+            create_post
+        })
+        .await;
+    println!("RESPONSE = {:?}", response);
+
+    println!("Try GetPost request");
+    let the_new_post_id = response?.into_inner().post_id;
+    // try get it
+    let response = forum_client
+        .get_food_post({
+            let mut get_post = holopku::codegen::forum::GetPostRequest {
+                post_id: the_new_post_id,
+            }
+            .into_request();
+            let metadata = get_post.metadata_mut();
+            metadata.append_bin(AUTHORIZATION_KEY, MetadataValue::from_bytes(&token));
+            get_post
+        })
+        .await;
+    println!("RESPONSE = {:?}", response);
+
+    // delete it
+    println!("Try DeletePost request");
+    let response = forum_client
+        .delete_post({
+            let mut delete_post = holopku::codegen::forum::DeletePostRequest {
+                post_id: the_new_post_id,
+                user_id: user_id,
+            }
+            .into_request();
+            let metadata = delete_post.metadata_mut();
+
+            metadata.append_bin(AUTHORIZATION_KEY, MetadataValue::from_bytes(&token));
+            delete_post
+        })
+        .await;
+    println!("RESPONSE = {:?}", response);
+
     Ok(())
 }
