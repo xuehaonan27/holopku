@@ -1,3 +1,4 @@
+use crate::codegen;
 use crate::codegen::amusement_post::AmusementPost;
 use crate::dbschema::sql_types::GameType as GameTypeSql;
 use crate::dbschema::sql_types::GoodsType as GoodsTypeSql;
@@ -130,6 +131,36 @@ pub struct NewAmusementPost {
     pub amuse_place: Option<String>,
 }
 
+#[derive(Debug, Insertable)]
+#[diesel(table_name = crate::dbschema::Posts)]
+pub struct NewFoodPost {
+    pub title: String,
+    pub user_id: i32,
+    pub content: String,
+    pub comments_id: NullableIntArray,
+    pub images: NullableIntArray,
+    pub post_type: PostType,
+
+    pub food_place: Option<Place>,
+    pub score: Option<i32>,
+}
+
+#[derive(Debug, Insertable)]
+#[diesel(table_name = crate::dbschema::Posts)]
+pub struct NewSellPost {
+    pub title: String,
+    pub user_id: i32,
+    pub content: String,
+    pub comments_id: NullableIntArray,
+    pub images: NullableIntArray,
+    pub post_type: PostType,
+    pub contact: Option<String>,
+
+    pub price: Option<i32>,
+    pub goods_type: Option<GoodsType>,
+    pub sold: Option<bool>,
+}
+
 #[derive(Debug, PartialEq, Queryable, Identifiable, Selectable, AsChangeset, Insertable)]
 #[diesel(table_name = crate::dbschema::Comments)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -208,6 +239,35 @@ pub enum Place {
     XueYi,
     XueWu,
     Other,
+}
+
+impl Place {
+    pub fn to_proto_type(&self) -> crate::codegen::food_post::Place {
+        use crate::codegen::food_post;
+        match *self {
+            Place::JiaYuan => food_post::Place::JiaYuan,
+            Place::YiYuan => food_post::Place::YiYuan,
+            Place::ShaoYuan => food_post::Place::ShaoYuan,
+            Place::YanNan => food_post::Place::YanNan,
+            Place::NongYuan => food_post::Place::NongYuan,
+            Place::XueYi => food_post::Place::XueYi,
+            Place::XueWu => food_post::Place::XueWu,
+            Place::Other => food_post::Place::Other,
+        }
+    }
+    pub fn from_proto_type(proto_food_place: &codegen::food_post::Place) -> Place {
+        use crate::codegen::food_post;
+        match *proto_food_place {
+            food_post::Place::JiaYuan => Place::JiaYuan,
+            food_post::Place::YiYuan => Place::YiYuan,
+            food_post::Place::ShaoYuan => Place::ShaoYuan,
+            food_post::Place::YanNan => Place::YanNan,
+            food_post::Place::NongYuan => Place::NongYuan,
+            food_post::Place::XueYi => Place::XueYi,
+            food_post::Place::XueWu => Place::XueWu,
+            food_post::Place::Other => Place::Other,
+        }
+    }
 }
 
 impl ToSql<PlaceTypeSql, Pg> for Place {
@@ -327,6 +387,29 @@ pub enum GoodsType {
     Display,
     Computer,
     Other,
+}
+
+impl GoodsType {
+    pub fn to_proto_type(&self) -> crate::codegen::sell_post::GoodsType {
+        use crate::codegen::sell_post;
+        match *self {
+            GoodsType::Ticket => sell_post::GoodsType::Ticket,
+            GoodsType::Book => sell_post::GoodsType::Book,
+            GoodsType::Display => sell_post::GoodsType::Display,
+            GoodsType::Computer => sell_post::GoodsType::Computer,
+            GoodsType::Other => sell_post::GoodsType::Other,
+        }
+    }
+    pub fn from_proto_type(proto_goods_type: &crate::codegen::sell_post::GoodsType) -> GoodsType {
+        use crate::codegen::sell_post;
+        match *proto_goods_type {
+            sell_post::GoodsType::Ticket => GoodsType::Ticket,
+            sell_post::GoodsType::Book => GoodsType::Book,
+            sell_post::GoodsType::Display => GoodsType::Display,
+            sell_post::GoodsType::Computer => GoodsType::Computer,
+            sell_post::GoodsType::Other => GoodsType::Other,
+        }
+    }
 }
 
 impl ToSql<GoodsTypeSql, Pg> for GoodsType {

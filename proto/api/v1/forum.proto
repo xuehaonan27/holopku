@@ -98,7 +98,7 @@ message ListPersonalPostsResponse{
 
 message ListFoodPostsRequest{
     // food post
-    foodPost.Place food_place = 1;
+    optional foodPost.Place food_place = 1;
     int32 score_lowbond = 2;
     bool random = 3;
     int32 number = 4;
@@ -106,18 +106,18 @@ message ListFoodPostsRequest{
 
 message ListSellPostsRequest{
     // sell post
-    sellPost.GoodsType goods_type = 1;
+    optional sellPost.GoodsType goods_type = 1;
     int32 price_upbond = 2;
     int32 number = 3;
 }
 
 message ListAmusementPostsRequest{
     // amusement post
-    amusementPost.GameType game_type = 1;
+    optional amusementPost.GameType game_type = 1;
     int32 people_all_lowbound = 2; 
     int32 people_all_upbound = 3;
     int32 people_diff_upbound = 4; 
-    int64 time_about = 5;
+    optional int64 time_about = 5;
     int32 number = 6;
 }
 
