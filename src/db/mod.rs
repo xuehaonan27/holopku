@@ -782,19 +782,21 @@ pub fn query_image_by_id(image_id: i32) -> Result<Vec<u8>, Box<dyn StdError>> {
     Ok(buffer)
 }
 
-static mut IMAGE_ID: i32 = 0;
+// static mut IMAGE_ID: i32 = 0;
 pub fn add_image(images: &Vec<u8>) -> Result<i32, Box<dyn StdError>> {
     //TODO: write file to local filesystem and return an id.
 
-    // unsafe块线程不安全
-    // 临时的存储方式，需要改进
-    unsafe {
-        let path = String::from("picture/") + &IMAGE_ID.to_string();
-        let mut file = std::fs::File::create(path)?;
-        file.write_all(images)?;
-        IMAGE_ID += 1;
-        Ok(IMAGE_ID - 1)
-    }
+    let new_image_id = uuid::Uuid::new_v4();
+    let bytes = new_image_id.as_bytes();
+    let mut buffer = [0u8; 4];
+    buffer.copy_from_slice(&bytes[0..4]);
+    let new_image_id = u32::from_be_bytes(buffer);
+
+    let path = String::from("picture/") + &new_image_id.to_string();
+    let mut file = std::fs::File::create(path)?;
+    file.write_all(images)?;
+
+    Ok(new_image_id as i32)
 }
 
 pub fn delete_image(image_id: i32) -> Result<(), Box<dyn StdError>> {

@@ -43,6 +43,7 @@ tonic = { version = "0.12", features = ["server", "tls"] }
 tonic-web = "0.12"
 tower = { version = "0.5", features = ["timeout", "retry"] }
 tower-http = "0.5.2"
+uuid = { version = "1.11.0", features = ["rng", "macro-diagnostics", "v4"] }
 
 [build-dependencies]
 tonic-build = { version = "0.12", features = ["prost"] }
