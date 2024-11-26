@@ -6,6 +6,8 @@ service Auth {
     rpc Register (RegisterRequest) returns (RegisterResponse);
     rpc Login (LoginRequest) returns (LoginResponse);
     rpc GetUser (GetUserRequest) returns (GetUserResponse);
+    rpc ChangeIcon (ChangeIconRequest) returns (ChangeIconResponse);
+    rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse);
 }
 
 message RegisterRequest {
@@ -40,6 +42,26 @@ message GetUserRequest {
 }
 
 message GetUserResponse {
+    bool success = 1;
+    User user = 2;
+}
+
+message ChangeIconRequest {
+    int32 user_id = 1;
+    bytes new_icon = 2;
+}
+
+message ChangeIconResponse {
+    bool success = 1;
+    User user = 2;
+}
+
+message ChangeUsernameRequest {
+    int32 user_id = 1;
+    string new_name = 2;
+}
+
+message ChangeUsernameResponse {
     bool success = 1;
     User user = 2;
 }

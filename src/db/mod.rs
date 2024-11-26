@@ -808,3 +808,29 @@ pub fn delete_image(image_id: i32) -> Result<(), Box<dyn StdError>> {
 
     Ok(())
 }
+
+pub fn update_user_icon_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    user_id: i32,
+    new_icon_id: i32,
+) -> Result<models::User, Box<dyn StdError>> {
+    use crate::dbschema::Users::dsl::*;
+    let updated_user: models::User = diesel::update(Users.filter(schema::Users::id.eq(user_id)))
+        .set(icon.eq(new_icon_id))
+        .returning(models::User::as_returning())
+        .get_result(conn)?;
+    Ok(updated_user)
+}
+
+pub fn update_username(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    user_id: i32,
+    new_name: String,
+) -> Result<models::User, Box<dyn StdError>> {
+    use crate::dbschema::Users::dsl::*;
+    let updated_user: models::User = diesel::update(Users.filter(schema::Users::id.eq(user_id)))
+        .set(username.eq(new_name))
+        .returning(models::User::as_returning())
+        .get_result(conn)?;
+    Ok(updated_user)
+}
