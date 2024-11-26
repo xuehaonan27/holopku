@@ -54,6 +54,9 @@ pub(super) async fn login_password(
                 created_at,
                 updated_at,
                 icon,
+                favorite_posts: dbuser.favorite_posts.to_vec_i32(),
+                liked_posts: dbuser.liked_posts.to_vec_i32(),
+                take_part_posts: dbuser.take_part_posts.to_vec_i32(),
             }),
             token,
         };

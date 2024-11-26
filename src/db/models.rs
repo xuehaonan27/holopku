@@ -477,3 +477,13 @@ impl ToSql<Array<Nullable<Integer>>, Pg> for NullableIntArray {
         ToSql::<Array<Nullable<Integer>>, Pg>::to_sql(vec, out)
     }
 }
+
+impl NullableIntArray {
+    pub fn to_vec_i32(self) -> Vec<i32> {
+        self.0
+            .into_iter()
+            .filter(|x| x.is_some())
+            .map(|opt| opt.unwrap())
+            .collect()
+    }
+}
