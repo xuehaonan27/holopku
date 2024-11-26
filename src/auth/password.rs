@@ -5,7 +5,7 @@ use tonic::Status;
 
 use crate::codegen::auth::{LoginRequest, LoginResponse, RegisterRequest, RegisterResponse};
 use crate::db::models::{LoginProvider, PasswordNewUser};
-use crate::db::{get_password_user_from_db, insert_password_user_into_db};
+use crate::db::{get_password_user_from_db, insert_password_user_into_db, query_image_by_id};
 use crate::middleware::issue_token;
 
 pub(super) async fn login_password(
@@ -40,6 +40,9 @@ pub(super) async fn login_password(
 
         trace!("Issued token: {token:?}");
 
+        let icon = query_image_by_id(dbuser.icon)
+            .map_err(|_| Status::internal("Fail to get user icon"))?;
+
         let response = LoginResponse {
             success: true,
             user: Some(User {
@@ -50,6 +53,7 @@ pub(super) async fn login_password(
                 nickname: dbuser.nickname,
                 created_at,
                 updated_at,
+                icon,
             }),
             token,
         };

@@ -39,7 +39,11 @@ CREATE TABLE "Users" (
     nickname VARCHAR NOT NULL,
     password VARCHAR,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP
+    updated_at TIMESTAMP,
+    icon INT NOT NULL DEFAULT 0,
+    favorite_posts INT[] NOT NULL,
+    liked_posts INT[] NOT NULL,
+    take_part_posts INT[] NOT NULL
 );
 
 CREATE TABLE "Posts" (

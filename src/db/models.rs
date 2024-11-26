@@ -61,6 +61,10 @@ pub struct User {
     pub password: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
+    pub icon: i32,
+    pub favorite_posts: NullableIntArray,
+    pub liked_posts: NullableIntArray,
+    pub take_part_posts: NullableIntArray,
 }
 
 #[derive(Debug, Insertable)]

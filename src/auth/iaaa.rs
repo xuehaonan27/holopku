@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::error::Error as StdError;
 use tonic::Status;
 
+use crate::db::query_image_by_id;
 use crate::middleware::issue_token;
 use crate::{codegen::auth::LoginResponse, db::get_iaaa_user_from_db};
 
@@ -103,6 +104,9 @@ pub(super) async fn login_iaaa(
     )
     .map_err(|_| Status::unauthenticated("Fail to assign token"))?;
 
+    let icon =
+        query_image_by_id(dbuser.icon).map_err(|_| Status::internal("Fail to get user icon"))?;
+
     use crate::codegen::auth::User;
     let response = LoginResponse {
         success: true,
@@ -114,6 +118,7 @@ pub(super) async fn login_iaaa(
             nickname: dbuser.nickname,
             created_at,
             updated_at,
+            icon,
         }),
         token,
     };

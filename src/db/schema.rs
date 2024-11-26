@@ -85,6 +85,10 @@ diesel::table! {
         password -> Nullable<Varchar>,
         created_at -> Timestamp,
         updated_at -> Nullable<Timestamp>,
+        icon -> Int4,
+        favorite_posts -> Array<Nullable<Int4>>,
+        liked_posts -> Array<Nullable<Int4>>,
+        take_part_posts -> Array<Nullable<Int4>>,
     }
 }
 
