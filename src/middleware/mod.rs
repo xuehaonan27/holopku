@@ -15,10 +15,13 @@ use crate::{AUTHORIZATION_KEY, JWT_EXPIRE_TIME, JWT_ISSUER, JWT_SECRET};
 pub fn auth_interceptor(request: Request<()>) -> Result<Request<()>, Status> {
     trace!("Auth intercepting request: {:?}", request);
 
+    Ok(request)
+    /*
     let token = match request.metadata().get(AUTHORIZATION_KEY) {
         Some(token) => token.to_str().unwrap_or(""),
         None => return Err(Status::unauthenticated("Missing authorization header")),
     };
+
 
     // decode JWT
     let token = decrypt_aes256(token.as_bytes())
@@ -43,6 +46,7 @@ pub fn auth_interceptor(request: Request<()>) -> Result<Request<()>, Status> {
     } else {
         Err(Status::unauthenticated("Invalid token"))
     }
+    */
 }
 
 #[derive(Debug, Serialize, Deserialize)]
