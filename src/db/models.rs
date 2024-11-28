@@ -74,6 +74,10 @@ pub struct IaaaNewUser {
     pub email: Option<String>,
     pub login_provider: LoginProvider,
     pub nickname: Option<String>,
+    pub icon: i32,
+    pub favorite_posts: NullableIntArray,
+    pub liked_posts: NullableIntArray,
+    pub take_part_posts: NullableIntArray,
 }
 
 #[derive(Debug, Insertable)]
@@ -84,6 +88,10 @@ pub struct PasswordNewUser {
     pub login_provider: LoginProvider,
     pub nickname: String,
     pub password: Option<String>,
+    pub icon: i32,
+    pub favorite_posts: NullableIntArray,
+    pub liked_posts: NullableIntArray,
+    pub take_part_posts: NullableIntArray,
 }
 
 #[derive(Debug, PartialEq, Queryable, Identifiable, Selectable, AsChangeset, Insertable)]

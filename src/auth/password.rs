@@ -82,13 +82,7 @@ pub(super) async fn register_password(
         return Err(Status::unavailable("User exist"));
     }
 
-    let new_user = PasswordNewUser {
-        username: req.username,
-        password: Some(hashed_password),
-        login_provider: LoginProvider::PASSWORD,
-        email: Some(req.email),
-        nickname: "".into(),
-    };
+    let new_user = PasswordNewUser::new(req.username, Some(req.email), Some(hashed_password));
 
     let _ = insert_password_user_into_db(conn, &new_user).map_err(|e| {
         error!("Fail to register new user {new_user:#?}: {e}");
