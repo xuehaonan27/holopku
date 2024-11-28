@@ -8,9 +8,10 @@ use chrono::{Duration, NaiveDateTime};
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 use diesel::PgConnection;
-use models::{NewFoodPost, NewSellPost, NullableIntArray};
+use models::{IaaaNewUser, NewFoodPost, NewSellPost, NullableIntArray, PasswordNewUser};
 use rand::Rng;
 use schema::Posts::{comments_id, people_all};
+use schema::Users::{email, nickname};
 use serde::de::IntoDeserializer;
 
 use std::error::Error as StdError;
@@ -55,6 +56,39 @@ impl DBClient {
             .get()
             .map_err(|e| DBError::FetchConn(e.to_string()))?;
         Ok(conn)
+    }
+}
+impl models::IaaaNewUser {
+    pub fn new(username: String, the_nickname: Option<String>) -> IaaaNewUser {
+        IaaaNewUser {
+            username,
+            email: None,
+            login_provider: models::LoginProvider::IAAA,
+            nickname: the_nickname,
+            icon: 0,
+            favorite_posts: NullableIntArray(vec![]),
+            liked_posts: NullableIntArray(vec![]),
+            take_part_posts: NullableIntArray(vec![]),
+        }
+    }
+}
+impl models::PasswordNewUser {
+    pub fn new(
+        username: String,
+        the_email: Option<String>,
+        hashed_password: Option<String>,
+    ) -> PasswordNewUser {
+        PasswordNewUser {
+            username,
+            email: the_email,
+            login_provider: models::LoginProvider::PASSWORD,
+            nickname: "".into(),
+            password: hashed_password,
+            icon: 0,
+            favorite_posts: NullableIntArray(vec![]),
+            liked_posts: NullableIntArray(vec![]),
+            take_part_posts: NullableIntArray(vec![]),
+        }
     }
 }
 impl models::Comment {
@@ -426,12 +460,8 @@ pub fn get_iaaa_user_from_db(
         dbuser
     } else {
         // create a new user
-        let new_user = models::IaaaNewUser {
-            username: resp.user_info.identity_id,
-            email: None, // FIXME: IAAA no email?
-            login_provider: models::LoginProvider::IAAA,
-            nickname: Some(resp.user_info.name),
-        };
+        let new_user =
+            models::IaaaNewUser::new(resp.user_info.identity_id, Some(resp.user_info.name));
         let new_user: models::User = diesel::insert_into(schema::Users::table)
             .values(&new_user)
             .returning(models::User::as_returning())
