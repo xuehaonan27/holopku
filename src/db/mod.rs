@@ -6,9 +6,10 @@ use crate::codegen::sell_post::SellPost;
 use crate::db::models::NewAmusementPost;
 use chrono::{Duration, NaiveDateTime};
 use diesel::prelude::*;
+use diesel::query_dsl::methods::ModifyLockDsl;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 use diesel::PgConnection;
-use models::{IaaaNewUser, NewFoodPost, NewSellPost, NullableIntArray, PasswordNewUser};
+use models::{IaaaNewUser, NewFoodPost, NewSellPost, NullableIntArray, PasswordNewUser, User};
 use rand::Rng;
 use schema::Posts::{comments_id, people_all};
 use schema::Users::{email, nickname};
@@ -794,6 +795,166 @@ pub fn set_sold_for_sell_post_by_id(
     diesel::update(Posts.filter(schema::Posts::id.eq(the_post_id)))
         .set(sold.eq(true))
         .execute(conn)?;
+    Ok(())
+}
+
+/// add post_id into user's liked_posts
+/// and add post's likes by 1
+pub fn like_post_by_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    the_user_id: i32,
+    the_post_id: i32,
+) -> Result<(), Box<dyn StdError>> {
+    use crate::dbschema::Posts::dsl::*;
+    use crate::dbschema::Users::dsl::*;
+    let the_user: models::User = Users
+        .filter(schema::Users::id.eq(the_user_id))
+        .select(models::User::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let mut user_like_ids = the_user.liked_posts.0;
+    if user_like_ids.iter().any(|x| x == &Some(the_post_id)) {
+        // already liked
+        // do not report error to frontend
+        return Ok(());
+    }
+    user_like_ids.push(Some(the_post_id));
+    let user_like_ids = NullableIntArray(user_like_ids);
+
+    let the_post: models::Post = Posts
+        .filter(schema::Posts::id.eq(the_post_id))
+        .select(models::Post::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let likes_before = the_post.likes;
+
+    diesel::update(Posts.filter(schema::Posts::id.eq(the_post_id)))
+        .set(likes.eq(likes_before + 1))
+        .execute(conn)?;
+
+    diesel::update(Users.filter(schema::Users::id.eq(the_user_id)))
+        .set(liked_posts.eq(user_like_ids))
+        .execute(conn)?;
+
+    Ok(())
+}
+
+/// delete post_id from user's liked_posts
+/// and minus post's likes by 1
+pub fn unlike_post_by_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    the_user_id: i32,
+    the_post_id: i32,
+) -> Result<(), Box<dyn StdError>> {
+    use crate::dbschema::Posts::dsl::*;
+    use crate::dbschema::Users::dsl::*;
+    let the_user: models::User = Users
+        .filter(schema::Users::id.eq(the_user_id))
+        .select(models::User::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let mut user_like_ids = the_user.liked_posts.0;
+    if !(user_like_ids.iter().any(|x| x == &Some(the_post_id))) {
+        // not liked
+        // do not report error to frontend
+        return Ok(());
+    }
+    user_like_ids.retain(|x| x != &Some(the_post_id));
+    let user_like_ids = NullableIntArray(user_like_ids);
+
+    let the_post: models::Post = Posts
+        .filter(schema::Posts::id.eq(the_post_id))
+        .select(models::Post::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let likes_before = the_post.likes;
+
+    diesel::update(Posts.filter(schema::Posts::id.eq(the_post_id)))
+        .set(likes.eq(likes_before - 1))
+        .execute(conn)?;
+
+    diesel::update(Users.filter(schema::Users::id.eq(the_user_id)))
+        .set(liked_posts.eq(user_like_ids))
+        .execute(conn)?;
+
+    Ok(())
+}
+
+pub fn favorate_post_by_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    the_user_id: i32,
+    the_post_id: i32,
+) -> Result<(), Box<dyn StdError>> {
+    use crate::dbschema::Posts::dsl::*;
+    use crate::dbschema::Users::dsl::*;
+    let the_user: models::User = Users
+        .filter(schema::Users::id.eq(the_user_id))
+        .select(models::User::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let mut user_favorate_ids = the_user.favorite_posts.0;
+    if user_favorate_ids.iter().any(|x| x == &Some(the_post_id)) {
+        // already liked
+        // do not report error to frontend
+        return Ok(());
+    }
+    user_favorate_ids.push(Some(the_post_id));
+    let user_favorate_ids = NullableIntArray(user_favorate_ids);
+
+    let the_post: models::Post = Posts
+        .filter(schema::Posts::id.eq(the_post_id))
+        .select(models::Post::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let favorate_before = the_post.favorates;
+
+    diesel::update(Posts.filter(schema::Posts::id.eq(the_post_id)))
+        .set(favorates.eq(favorate_before + 1))
+        .execute(conn)?;
+
+    diesel::update(Users.filter(schema::Users::id.eq(the_user_id)))
+        .set(favorite_posts.eq(user_favorate_ids))
+        .execute(conn)?;
+
+    Ok(())
+}
+
+pub fn unfavorate_post_by_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    the_user_id: i32,
+    the_post_id: i32,
+) -> Result<(), Box<dyn StdError>> {
+    use crate::dbschema::Posts::dsl::*;
+    use crate::dbschema::Users::dsl::*;
+    let the_user: models::User = Users
+        .filter(schema::Users::id.eq(the_user_id))
+        .select(models::User::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let mut user_favorate_ids = the_user.favorite_posts.0;
+    if user_favorate_ids.iter().any(|x| x == &Some(the_post_id)) {
+        // already liked
+        // do not report error to frontend
+        return Ok(());
+    }
+    user_favorate_ids.retain(|x| x != &Some(the_post_id));
+    let user_favorate_ids = NullableIntArray(user_favorate_ids);
+
+    let the_post: models::Post = Posts
+        .filter(schema::Posts::id.eq(the_post_id))
+        .select(models::Post::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let favorate_before = the_post.favorates;
+
+    diesel::update(Posts.filter(schema::Posts::id.eq(the_post_id)))
+        .set(favorates.eq(favorate_before - 1))
+        .execute(conn)?;
+
+    diesel::update(Users.filter(schema::Users::id.eq(the_user_id)))
+        .set(favorite_posts.eq(user_favorate_ids))
+        .execute(conn)?;
+
     Ok(())
 }
 

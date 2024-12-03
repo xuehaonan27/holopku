@@ -173,8 +173,21 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("LikePost got request: {req:#?}");
 
-        // need data struct about user
-        todo!();
+        let the_user_id = req.user_id;
+        let the_post_id = req.post_id;
+
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        like_post_by_id(conn, the_user_id, the_post_id).map_err(|e| {
+            error!("Fail to like post from database: {e}");
+            Status::internal("Fail to like post")
+        })?;
+
+        let response = LikePostResponse { success: true };
+        Ok(Response::new(response))
     }
 
     async fn unlike_post(
@@ -184,8 +197,21 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("UnlikePost got request: {req:#?}");
 
-        // need data struct about user
-        todo!();
+        let the_user_id = req.user_id;
+        let the_post_id = req.post_id;
+
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        unlike_post_by_id(conn, the_user_id, the_post_id).map_err(|e| {
+            error!("Fail to unlike post from database: {e}");
+            Status::internal("Fail to unlike post")
+        })?;
+
+        let response = UnlikePostResponse { success: true };
+        Ok(Response::new(response))
     }
 
     async fn like_comment(
@@ -217,8 +243,21 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("Favorate got request: {req:#?}");
 
-        // need data struct about user
-        todo!();
+        let the_user_id = req.user_id;
+        let the_post_id = req.post_id;
+
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        favorate_post_by_id(conn, the_user_id, the_post_id).map_err(|e| {
+            error!("Fail to favorate post from database: {e}");
+            Status::internal("Fail to favorate post")
+        })?;
+
+        let response = FavorateResponse { success: true };
+        Ok(Response::new(response))
     }
 
     async fn unfavorate(
@@ -228,8 +267,21 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("Unfavorate got request: {req:#?}");
 
-        // need data struct about user
-        todo!();
+        let the_user_id = req.user_id;
+        let the_post_id = req.post_id;
+
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        unfavorate_post_by_id(conn, the_user_id, the_post_id).map_err(|e| {
+            error!("Fail to unfavorate post from database: {e}");
+            Status::internal("Fail to unfavorate post")
+        })?;
+
+        let response = UnfavorateResponse { success: true };
+        Ok(Response::new(response))
     }
 
     // about amusement
