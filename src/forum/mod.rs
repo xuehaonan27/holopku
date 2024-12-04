@@ -411,8 +411,22 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("TakePart got request: {req:#?}");
 
-        // need data struct about user
-        todo!();
+        let the_user_id = req.user_id;
+        let the_post_id = req.post_id;
+
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        take_part_post_by_id(conn, the_user_id, the_post_id).map_err(|e| {
+            error!("Fail to takepart: {e}");
+            Status::internal("Fail to takepart")
+        })?;
+
+        let response = TakePartAmusePostResponse { success: true };
+
+        Ok(Response::new(response))
     }
 
     async fn no_take_part(
@@ -422,8 +436,22 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("NoTakePart got request: {req:#?}");
 
-        // need data struct about user
-        todo!();
+        let the_user_id = req.user_id;
+        let the_post_id = req.post_id;
+
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        no_take_part_post_by_id(conn, the_user_id, the_post_id).map_err(|e| {
+            error!("Fail to no_takepart: {e}");
+            Status::internal("Fail to no_takepart")
+        })?;
+
+        let response = NoTakePartAmusePostResponse { success: true };
+
+        Ok(Response::new(response))
     }
 
     // about food
@@ -570,6 +598,7 @@ impl Forum for ForumService {
         };
         Ok(Response::new(response))
     }
+
     async fn get_sell_post(
         &self,
         request: tonic::Request<GetPostRequest>,
@@ -605,6 +634,7 @@ impl Forum for ForumService {
             Ok(Response::new(response))
         }
     }
+
     async fn list_sell_posts(
         &self,
         request: tonic::Request<ListSellPostsRequest>,

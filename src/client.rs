@@ -76,7 +76,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let response = response.unwrap().into_inner();
     let token = response.token;
-    println!("User token = {token:#?}");
+    // println!("User token = {token:#?}");
     let user_id = response.user.unwrap().id;
 
     println!("Try password registration once again, should fail");
@@ -124,6 +124,66 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Try GetPost request");
     let the_new_post_id = response?.into_inner().post_id;
+    // try get it
+    let response = forum_client
+        .get_food_post({
+            let mut get_post = holopku::codegen::forum::GetPostRequest {
+                post_id: the_new_post_id,
+            }
+            .into_request();
+            let metadata = get_post.metadata_mut();
+            metadata.append_bin(AUTHORIZATION_KEY, MetadataValue::from_bytes(&token));
+            get_post
+        })
+        .await;
+    println!("RESPONSE = {:?}", response);
+
+    println!("Try Favorate request");
+    let response = forum_client
+        .favorate({
+            let mut favorate_post = holopku::codegen::forum::FavorateRequest {
+                user_id,
+                post_id: the_new_post_id,
+            }
+            .into_request();
+            let metadata = favorate_post.metadata_mut();
+            metadata.append_bin(AUTHORIZATION_KEY, MetadataValue::from_bytes(&token));
+            favorate_post
+        })
+        .await;
+    println!("RESPONSE = {:?}", response);
+
+    println!("Try GetPost request again");
+    // try get it
+    let response = forum_client
+        .get_food_post({
+            let mut get_post = holopku::codegen::forum::GetPostRequest {
+                post_id: the_new_post_id,
+            }
+            .into_request();
+            let metadata = get_post.metadata_mut();
+            metadata.append_bin(AUTHORIZATION_KEY, MetadataValue::from_bytes(&token));
+            get_post
+        })
+        .await;
+    println!("RESPONSE = {:?}", response);
+
+    println!("Try UnFavorate request");
+    let response = forum_client
+        .unfavorate({
+            let mut favorate_post = holopku::codegen::forum::UnfavorateRequest {
+                user_id,
+                post_id: the_new_post_id,
+            }
+            .into_request();
+            let metadata = favorate_post.metadata_mut();
+            metadata.append_bin(AUTHORIZATION_KEY, MetadataValue::from_bytes(&token));
+            favorate_post
+        })
+        .await;
+    println!("RESPONSE = {:?}", response);
+
+    println!("Try GetPost request again");
     // try get it
     let response = forum_client
         .get_food_post({
