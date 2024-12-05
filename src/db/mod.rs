@@ -500,6 +500,19 @@ pub fn insert_password_user_into_db(
     Ok(new_user)
 }
 
+pub fn get_user_by_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    the_user_id: i32,
+) -> Result<models::User, Box<dyn StdError>> {
+    use crate::dbschema::Users::dsl::*;
+    let user = Users
+        .filter(schema::Users::id.eq(&the_user_id))
+        .select(models::User::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    Ok(user)
+}
+
 pub fn insert_post(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     new_post: &models::Post,
@@ -511,6 +524,7 @@ pub fn insert_post(
         .get_result(conn)?;
     Ok(new_post)
 }
+
 pub fn insert_amusement_post(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     new_post: &models::NewAmusementPost,
@@ -779,10 +793,14 @@ pub fn delete_comment_and_update_post(
 pub fn query_post_by_user_id(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     the_user_id: i32,
+    the_post_type: PostType,
+    number: i32,
 ) -> Result<Vec<models::Post>, Box<dyn StdError>> {
     use crate::dbschema::Posts::dsl::*;
     let posts = Posts
         .filter(schema::Posts::user_id.eq(&the_user_id))
+        .filter(schema::Posts::post_type.eq(&the_post_type))
+        .limit(number.into())
         .select(models::Post::as_select())
         .load(conn)
         .map_err(|e| e.to_string())?;
