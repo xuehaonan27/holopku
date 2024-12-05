@@ -211,6 +211,13 @@ impl PostType {
             PostType::SELLPOST => post::PostType::Sellpost,
         }
     }
+    pub fn from_proto_type(proto_type: crate::codegen::post::PostType) -> Self {
+        match proto_type {
+            crate::codegen::post::PostType::Amusementpost => PostType::AMUSEMENTPOST,
+            crate::codegen::post::PostType::Sellpost => PostType::SELLPOST,
+            crate::codegen::post::PostType::Foodpost => PostType::FOODPOST,
+        }
+    }
 }
 
 impl ToSql<PostTypeSql, Pg> for PostType {

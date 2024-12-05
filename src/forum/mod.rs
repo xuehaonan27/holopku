@@ -10,8 +10,10 @@ use schema::Posts::people_all;
 use schema::Posts::sold;
 use tonic::{Request, Response, Status};
 
+use crate::codegen;
 use crate::codegen::amusement_post;
 use crate::codegen::amusement_post::AmusementPost;
+use crate::codegen::food_post::FoodPost;
 use crate::codegen::forum::forum_server::Forum;
 use crate::codegen::forum::CreateAmusementPostRequest;
 use crate::codegen::forum::CreateFoodPostRequest;
@@ -21,6 +23,7 @@ use crate::codegen::forum::GetAmusementPostResponse;
 use crate::codegen::forum::GetFoodPostResponse;
 use crate::codegen::forum::GetPostRequest;
 use crate::codegen::forum::GetSellPostResponse;
+use crate::codegen::forum::ListRequestType;
 use crate::codegen::forum::{CommentRequest, CommentResponse};
 use crate::codegen::forum::{DeleteCommentRequest, DeleteCommentResponse};
 use crate::codegen::forum::{DeletePostRequest, DeletePostResponse};
@@ -38,6 +41,7 @@ use crate::codegen::forum::{UnfavorateRequest, UnfavorateResponse};
 use crate::codegen::forum::{UnlikeCommentRequest, UnlikeCommentResponse};
 use crate::codegen::forum::{UnlikePostRequest, UnlikePostResponse};
 use crate::codegen::post::Post;
+use crate::codegen::sell_post::SellPost;
 use crate::db::*;
 
 use crate::db::models::NewComment;
@@ -107,8 +111,123 @@ impl Forum for ForumService {
         let request_type = req.r#type(); // own? star? takepart?
         let number = req.number;
 
-        // need data struct about user
-        todo!();
+        let user = get_user_by_id(conn, the_user_id).map_err(|e| {
+            error!("Fail to get user from database: {e}");
+            Status::internal("Fail to list personal post")
+        })?;
+
+        let result = match request_type {
+            ListRequestType::Own => {
+                let mut posts = query_post_by_user_id(
+                    conn,
+                    the_user_id,
+                    models::PostType::from_proto_type(post_type),
+                    number,
+                )
+                .map_err(|e| {
+                    error!("Fail to query post of user from database: {e}");
+                    Status::internal("Fail to list personal post")
+                })?;
+                posts.retain(|post| post.post_type.to_proto_type() == post_type);
+                posts
+            }
+            ListRequestType::Takepart => {
+                let posts_result: Vec<Result<models::Post, Box<dyn std::error::Error>>> = user
+                    .take_part_posts
+                    .0
+                    .iter()
+                    .filter(|the_post_id| (**the_post_id).is_some())
+                    .map(|the_post_id| query_post_by_id(conn, the_post_id.unwrap())) // safe unwrap
+                    .collect();
+                let posts: Vec<models::Post> = posts_result
+                    .into_iter()
+                    .filter(|result| (*result).is_ok())
+                    .map(|result| result.unwrap()) // safe unwrap
+                    .filter(|post| post.post_type == PostType::SELLPOST)
+                    .take(number as usize)
+                    .collect();
+                posts
+            }
+            ListRequestType::Star => {
+                let posts_result: Vec<Result<models::Post, Box<dyn std::error::Error>>> = user
+                    .favorite_posts
+                    .0
+                    .iter()
+                    .filter(|the_post_id| (**the_post_id).is_some())
+                    .map(|the_post_id| query_post_by_id(conn, the_post_id.unwrap())) // safe unwrap
+                    .collect();
+                let posts: Vec<models::Post> = posts_result
+                    .into_iter()
+                    .filter(|result| (*result).is_ok())
+                    .map(|result| result.unwrap()) // safe unwrap
+                    .filter(|post| post.post_type.to_proto_type() == post_type)
+                    .take(number as usize)
+                    .collect();
+                posts
+            }
+        };
+
+        let response = match post_type {
+            codegen::post::PostType::Amusementpost => {
+                let posts = result
+                    .into_iter()
+                    .map(|post| post.to_proto_amusement_post(conn))
+                    .map(|result| {
+                        result.map_err(|e| {
+                            error!("Fail to query post of user from database: {e}");
+                            Status::internal("Fail to list personal post")
+                        })
+                    })
+                    .collect::<Result<Vec<AmusementPost>, tonic::Status>>()?;
+                ListPersonalPostsResponse {
+                    message: Some(
+                        codegen::forum::list_personal_posts_response::Message::AResponse(
+                            ListAmusementPostsResponse { posts },
+                        ),
+                    ),
+                }
+            }
+            codegen::post::PostType::Sellpost => {
+                let posts = result
+                    .into_iter()
+                    .map(|post| post.to_proto_sell_post(conn))
+                    .map(|result| {
+                        result.map_err(|e| {
+                            error!("Fail to query post of user from database: {e}");
+                            Status::internal("Fail to list personal post")
+                        })
+                    })
+                    .collect::<Result<Vec<SellPost>, tonic::Status>>()?;
+                ListPersonalPostsResponse {
+                    message: Some(
+                        codegen::forum::list_personal_posts_response::Message::SResponse(
+                            ListSellPostsResponse { posts },
+                        ),
+                    ),
+                }
+            }
+            codegen::post::PostType::Foodpost => {
+                let posts = result
+                    .into_iter()
+                    .map(|post| post.to_proto_food_post(conn))
+                    .map(|result| {
+                        result.map_err(|e| {
+                            error!("Fail to query post of user from database: {e}");
+                            Status::internal("Fail to list personal post")
+                        })
+                    })
+                    .collect::<Result<Vec<FoodPost>, tonic::Status>>()?;
+                ListPersonalPostsResponse {
+                    message: Some(
+                        codegen::forum::list_personal_posts_response::Message::FResponse(
+                            ListFoodPostsResponse { posts },
+                        ),
+                    ),
+                }
+            }
+        };
+
+        Ok(Response::new(response))
     }
 
     async fn comment(
@@ -411,8 +530,22 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("TakePart got request: {req:#?}");
 
-        // need data struct about user
-        todo!();
+        let the_user_id = req.user_id;
+        let the_post_id = req.post_id;
+
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        take_part_post_by_id(conn, the_user_id, the_post_id).map_err(|e| {
+            error!("Fail to takepart: {e}");
+            Status::internal("Fail to takepart")
+        })?;
+
+        let response = TakePartAmusePostResponse { success: true };
+
+        Ok(Response::new(response))
     }
 
     async fn no_take_part(
@@ -422,8 +555,22 @@ impl Forum for ForumService {
         let req = request.into_inner();
         trace!("NoTakePart got request: {req:#?}");
 
-        // need data struct about user
-        todo!();
+        let the_user_id = req.user_id;
+        let the_post_id = req.post_id;
+
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to comment")
+        })?;
+
+        no_take_part_post_by_id(conn, the_user_id, the_post_id).map_err(|e| {
+            error!("Fail to no_takepart: {e}");
+            Status::internal("Fail to no_takepart")
+        })?;
+
+        let response = NoTakePartAmusePostResponse { success: true };
+
+        Ok(Response::new(response))
     }
 
     // about food
@@ -570,6 +717,7 @@ impl Forum for ForumService {
         };
         Ok(Response::new(response))
     }
+
     async fn get_sell_post(
         &self,
         request: tonic::Request<GetPostRequest>,
@@ -605,6 +753,7 @@ impl Forum for ForumService {
             Ok(Response::new(response))
         }
     }
+
     async fn list_sell_posts(
         &self,
         request: tonic::Request<ListSellPostsRequest>,

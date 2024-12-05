@@ -9,7 +9,9 @@ use diesel::prelude::*;
 use diesel::query_dsl::methods::ModifyLockDsl;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 use diesel::PgConnection;
-use models::{IaaaNewUser, NewFoodPost, NewSellPost, NullableIntArray, PasswordNewUser, User};
+use models::{
+    IaaaNewUser, NewFoodPost, NewSellPost, NullableIntArray, PasswordNewUser, PostType, User,
+};
 use rand::Rng;
 use schema::Posts::{comments_id, people_all};
 use schema::Users::{email, nickname};
@@ -498,6 +500,19 @@ pub fn insert_password_user_into_db(
     Ok(new_user)
 }
 
+pub fn get_user_by_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    the_user_id: i32,
+) -> Result<models::User, Box<dyn StdError>> {
+    use crate::dbschema::Users::dsl::*;
+    let user = Users
+        .filter(schema::Users::id.eq(&the_user_id))
+        .select(models::User::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    Ok(user)
+}
+
 pub fn insert_post(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     new_post: &models::Post,
@@ -509,6 +524,7 @@ pub fn insert_post(
         .get_result(conn)?;
     Ok(new_post)
 }
+
 pub fn insert_amusement_post(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     new_post: &models::NewAmusementPost,
@@ -777,10 +793,14 @@ pub fn delete_comment_and_update_post(
 pub fn query_post_by_user_id(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     the_user_id: i32,
+    the_post_type: PostType,
+    number: i32,
 ) -> Result<Vec<models::Post>, Box<dyn StdError>> {
     use crate::dbschema::Posts::dsl::*;
     let posts = Posts
         .filter(schema::Posts::user_id.eq(&the_user_id))
+        .filter(schema::Posts::post_type.eq(&the_post_type))
+        .limit(number.into())
         .select(models::Post::as_select())
         .load(conn)
         .map_err(|e| e.to_string())?;
@@ -932,7 +952,7 @@ pub fn unfavorate_post_by_id(
         .first(conn)
         .map_err(|e| e.to_string())?;
     let mut user_favorate_ids = the_user.favorite_posts.0;
-    if user_favorate_ids.iter().any(|x| x == &Some(the_post_id)) {
+    if !(user_favorate_ids.iter().any(|x| x == &Some(the_post_id))) {
         // already liked
         // do not report error to frontend
         return Ok(());
@@ -953,6 +973,84 @@ pub fn unfavorate_post_by_id(
 
     diesel::update(Users.filter(schema::Users::id.eq(the_user_id)))
         .set(favorite_posts.eq(user_favorate_ids))
+        .execute(conn)?;
+
+    Ok(())
+}
+
+pub fn take_part_post_by_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    the_user_id: i32,
+    the_post_id: i32,
+) -> Result<(), Box<dyn StdError>> {
+    use crate::dbschema::Posts::dsl::*;
+    use crate::dbschema::Users::dsl::*;
+    let the_user: models::User = Users
+        .filter(schema::Users::id.eq(the_user_id))
+        .select(models::User::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let mut user_take_part_ids = the_user.take_part_posts.0;
+    if user_take_part_ids.iter().any(|x| x == &Some(the_post_id)) {
+        // already liked
+        // do not report error to frontend
+        return Ok(());
+    }
+    user_take_part_ids.push(Some(the_post_id));
+    let user_take_part_ids = NullableIntArray(user_take_part_ids);
+
+    let the_post: models::Post = Posts
+        .filter(schema::Posts::id.eq(the_post_id))
+        .select(models::Post::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let people_already_before = the_post.people_already.unwrap_or(0);
+
+    diesel::update(Posts.filter(schema::Posts::id.eq(the_post_id)))
+        .set(people_already.eq(people_already_before + 1))
+        .execute(conn)?;
+
+    diesel::update(Users.filter(schema::Users::id.eq(the_user_id)))
+        .set(take_part_posts.eq(user_take_part_ids))
+        .execute(conn)?;
+
+    Ok(())
+}
+
+pub fn no_take_part_post_by_id(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    the_user_id: i32,
+    the_post_id: i32,
+) -> Result<(), Box<dyn StdError>> {
+    use crate::dbschema::Posts::dsl::*;
+    use crate::dbschema::Users::dsl::*;
+    let the_user: models::User = Users
+        .filter(schema::Users::id.eq(the_user_id))
+        .select(models::User::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let mut user_take_part_ids = the_user.take_part_posts.0;
+    if !(user_take_part_ids.iter().any(|x| x == &Some(the_post_id))) {
+        // already liked
+        // do not report error to frontend
+        return Ok(());
+    }
+    user_take_part_ids.retain(|x| x != &Some(the_post_id));
+    let user_take_part_ids = NullableIntArray(user_take_part_ids);
+
+    let the_post: models::Post = Posts
+        .filter(schema::Posts::id.eq(the_post_id))
+        .select(models::Post::as_select())
+        .first(conn)
+        .map_err(|e| e.to_string())?;
+    let people_already_before = the_post.people_already.unwrap_or(1);
+
+    diesel::update(Posts.filter(schema::Posts::id.eq(the_post_id)))
+        .set(people_already.eq(people_already_before - 1))
+        .execute(conn)?;
+
+    diesel::update(Users.filter(schema::Users::id.eq(the_user_id)))
+        .set(take_part_posts.eq(user_take_part_ids))
         .execute(conn)?;
 
     Ok(())
