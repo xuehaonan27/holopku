@@ -8,12 +8,14 @@ use password::{login_password, register_password};
 use tonic::{Request, Response, Status};
 
 use crate::codegen::auth::auth_server::Auth;
-use crate::codegen::auth::{ChangeIconRequest, ChangeIconResponse};
+use crate::codegen::auth::{ChangeIconRequest, ChangeIconResponse, User};
 use crate::codegen::auth::{ChangeUsernameRequest, ChangeUsernameResponse};
 use crate::codegen::auth::{GetUserRequest, GetUserResponse};
 use crate::codegen::auth::{LoginRequest, LoginResponse};
 use crate::codegen::auth::{RegisterRequest, RegisterResponse};
-use crate::db::{add_image, query_image_by_id, update_user_icon_id, update_username, DBClient};
+use crate::db::{
+    add_image, get_user_by_id, query_image_by_id, update_user_icon_id, update_username, DBClient,
+};
 
 #[derive(Debug)]
 pub struct AuthService {
@@ -89,7 +91,47 @@ impl Auth for AuthService {
     ) -> Result<Response<GetUserResponse>, Status> {
         let req = request.into_inner();
         trace!("GetUser got request: {req:#?}");
-        todo!()
+
+        let the_user_id = req.user_id;
+
+        let conn = &mut self.client.get_conn().map_err(|e| {
+            error!("Fail to get connection to database: {e}");
+            Status::internal("Fail to get user")
+        })?;
+
+        let dbuser = get_user_by_id(conn, the_user_id).map_err(|e| {
+            error!("Fail to get user from database: {e}");
+            Status::internal("Fail to get user")
+        })?;
+
+        let created_at: i64 = dbuser.created_at.and_utc().timestamp();
+        let updated_at: Option<i64> = dbuser
+            .updated_at
+            .and_then(|x| Some(x.and_utc().timestamp()));
+
+        let icon = query_image_by_id(dbuser.icon).map_err(|e| {
+            error!("Fail to query image by id {} :{e}", dbuser.icon);
+            Status::internal("Fail to change username")
+        })?;
+
+        let response = GetUserResponse {
+            success: true,
+            user: Some(crate::codegen::auth::User {
+                id: dbuser.id,
+                username: dbuser.username,
+                email: dbuser.email,
+                login_provider: dbuser.login_provider as i32,
+                nickname: dbuser.nickname,
+                created_at,
+                updated_at,
+                icon,
+                favorite_posts: dbuser.favorite_posts.to_vec_i32(),
+                liked_posts: dbuser.liked_posts.to_vec_i32(),
+                take_part_posts: dbuser.take_part_posts.to_vec_i32(),
+            }),
+        };
+
+        Ok(Response::new(response))
     }
 
     async fn change_icon(
