@@ -14,7 +14,8 @@ use crate::codegen::auth::{GetUserRequest, GetUserResponse};
 use crate::codegen::auth::{LoginRequest, LoginResponse};
 use crate::codegen::auth::{RegisterRequest, RegisterResponse};
 use crate::db::{
-    add_image, get_user_by_id, query_image_by_id, update_user_icon_id, update_username, DBClient,
+    add_image, get_password_user_from_db, get_user_by_id, query_image_by_id, update_user_icon_id,
+    update_username, DBClient,
 };
 
 #[derive(Debug)]
@@ -195,6 +196,11 @@ impl Auth for AuthService {
             error!("Fail to get connection to database: {e}");
             Status::internal("Fail to authorize")
         })?;
+
+        let name_duplicate = get_password_user_from_db(conn, &new_name).is_ok();
+        if name_duplicate {
+            return Err(Status::internal("Fail to change username: Username exist"));
+        }
 
         let Ok(dbuser) = update_username(conn, req.user_id, new_name) else {
             error!("Fail to change username");
