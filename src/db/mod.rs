@@ -1062,7 +1062,7 @@ pub fn query_image_by_id(image_id: i32) -> Result<Vec<u8>, Box<dyn StdError>> {
 
     // most naive implement
     // need more improve
-    let path = String::from("picture/") + &image_id.to_string();
+    let path = String::from("picture/") + &(image_id as u32).to_string();
     let mut file = std::fs::File::open(path)?;
     let mut buffer = Vec::new();
     // 读取文件内容到 buffer 中
@@ -1092,7 +1092,7 @@ pub fn delete_image(image_id: i32) -> Result<(), Box<dyn StdError>> {
     //TODO: delete image from local filesystem
 
     // need improve
-    let path = String::from("picture/") + &image_id.to_string();
+    let path = String::from("picture/") + &(image_id as u32).to_string();
     std::fs::remove_file(path)?;
 
     Ok(())

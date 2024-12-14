@@ -7,13 +7,14 @@ pub mod codegen {
     pub mod post;
     pub mod sell_post;
 }
-
 pub mod auth;
 pub mod crypto;
 pub mod db;
 pub mod forum;
 pub mod hello;
 pub mod middleware;
+#[cfg(test)]
+pub mod tests;
 use db::schema as dbschema;
 use log::info;
 use std::env;
