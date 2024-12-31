@@ -1,3 +1,14 @@
+# HOLOPKU
+如何运行后端
+
+安装Rust工具链。
+cd进入本directory。
+```shell
+cargo build --release
+
+cargo run --release --bin server
+```
+
 Backend:
 `www` user: 400 (user read only) privacy: cargo run
 docker + Linux based (ubuntu)
